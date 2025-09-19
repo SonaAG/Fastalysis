@@ -1,4 +1,3 @@
-
 # --- Import all main features from each module ---
 from app import (
 	run_blast_top_hits,
@@ -26,7 +25,7 @@ def run_blast_controller(fasta_path, num_hits=5):
 		"hits": hits
 	}
 
-def run_mutation_controller(user_fasta_path, ref_accession):
+def run_mutation_controller(user_fasta_path, hit_index=0):
 
 	from Bio import SeqIO, Entrez
 	from Bio.Blast import NCBIWWW, NCBIXML
@@ -39,16 +38,19 @@ def run_mutation_controller(user_fasta_path, ref_accession):
 	# BLAST user sequence against RefSeq (as in mutation.py)
 	program = "blastn" if seq_type == "nucleotide" else "blastp"
 	db = "refseq_rna" if seq_type == "nucleotide" else "refseq_protein"
-	result_handle = NCBIWWW.qblast(program, db, user_seq, hitlist_size=2)
+
+	result_handle = NCBIWWW.qblast(program, db, user_seq, hitlist_size=hit_index+1)
 	blast_record = NCBIXML.read(result_handle)
 	if not blast_record.alignments:
 		return {"error": "No BLAST hits found for user sequence."}
+	if hit_index >= len(blast_record.alignments):
+		return {"error": f"Requested hit_index {hit_index} but only {len(blast_record.alignments)} hits found."}
 
-	# Use top hit and its first HSP (matched region)
-	top_hit = blast_record.alignments[0]
-	hsp = top_hit.hsps[0]
-	ref_accession = top_hit.accession
-	ref_title = top_hit.hit_def
+	# Use the selected hit and its first HSP (matched region)
+	selected_hit = blast_record.alignments[hit_index]
+	hsp = selected_hit.hsps[0]
+	ref_accession = selected_hit.accession
+	ref_title = selected_hit.hit_def
 
 	# Use only the aligned region (HSP) for analysis
 	ref_aligned = hsp.sbjct
@@ -131,8 +133,8 @@ def run_mutation_controller(user_fasta_path, ref_accession):
 		return fig
 
 	# Save plots as HTML (for just the HSP region)
-	scatter_html = f"mutation_scatter_{user_id}_{ref_accession}_hsp.html"
-	track_html = f"mutation_track_{user_id}_{ref_accession}_hsp.html"
+	scatter_html = f"mutation_scatter_{user_id}_{ref_accession}_hsp_{hit_index}.html"
+	track_html = f"mutation_track_{user_id}_{ref_accession}_hsp_{hit_index}.html"
 	plot_mutation_scatter(ref_aligned, user_aligned).write_html(scatter_html)
 	plot_mutation_track(ref_aligned, user_aligned).write_html(track_html)
 
@@ -199,9 +201,10 @@ def run_full_pipeline(fasta_path, ref_accession=None, variant_accession_or_gene=
 	# BLAST
 	if fasta_path:
 		results['blast'] = run_blast_controller(fasta_path, num_hits=num_blast_hits)
-	# Mutation analysis
-	if fasta_path and ref_accession:
-		results['mutation'] = run_mutation_controller(fasta_path, ref_accession)
+	# Mutation analysis (default to top hit)
+	if fasta_path:
+		results['mutation_top1'] = run_mutation_controller(fasta_path, hit_index=0)
+		results['mutation_top2'] = run_mutation_controller(fasta_path, hit_index=1)
 	# Variant table
 	if variant_accession_or_gene:
 		# If string looks like NM_ or NP_, treat as accession

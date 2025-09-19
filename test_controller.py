@@ -22,8 +22,10 @@ try:
     # Test BLAST
     results['blast'] = run_blast_controller(fasta_path, num_hits=3)
 
-    # Test Mutation Analysis
-    results['mutation'] = run_mutation_controller(fasta_path, ref_accession)
+
+    # Test Mutation Analysis for top 1 and top 2 BLAST hits
+    results['mutation_top1'] = run_mutation_controller(fasta_path, hit_index=0)
+    results['mutation_top2'] = run_mutation_controller(fasta_path, hit_index=1)
 
     # Test Variant Table (by gene symbol)
     results['variant_table'] = run_variant_table_controller(gene_symbol, by_accession=False, max_variants=5)
@@ -48,5 +50,10 @@ try:
         json.dump(results, f, indent=2, ensure_ascii=False)
 
     print("Test results written to controller_test_output.json")
+    # Print HTML output paths for both hits
+    print("Top 1 mutation scatter HTML:", results['mutation_top1']["mutation_scatter_html"])
+    print("Top 1 mutation track HTML:", results['mutation_top1']["mutation_track_html"])
+    print("Top 2 mutation scatter HTML:", results['mutation_top2']["mutation_scatter_html"])
+    print("Top 2 mutation track HTML:", results['mutation_top2']["mutation_track_html"])
 except Exception as e:
     print("An error occurred:", str(e))
