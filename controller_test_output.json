@@ -1,0 +1,1686 @@
+{
+  "blast": {
+    "sequence_id": "OR905938.1",
+    "sequence_type": "nucleotide",
+    "hits": [
+      {
+        "Accession": "OR905937",
+        "Title": "Dengue virus type 4 isolate RTK_06/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333792|gb|OR905938.1| Dengue virus type 4 isolate RTK_08/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333796|gb|OR905940.1| Dengue virus type 4 isolate FRK_20/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333800|gb|OR905942.1| Dengue virus type 4 isolate YNR_19/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+        "Identity (%)": 100.0,
+        "E-value": 0.0,
+        "Score": 2970.0,
+        "Coverage (%)": 100.0
+      },
+      {
+        "Accession": "OR905943",
+        "Title": "Dengue virus type 4 isolate JM_1396/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+        "Identity (%)": 99.93,
+        "E-value": 0.0,
+        "Score": 2965.0,
+        "Coverage (%)": 100.0
+      },
+      {
+        "Accession": "OR905946",
+        "Title": "Dengue virus type 4 isolate FIP_41/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333826|gb|OR905955.1| Dengue virus type 4 isolate PKL_60/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+        "Identity (%)": 99.93,
+        "E-value": 0.0,
+        "Score": 2965.0,
+        "Coverage (%)": 100.0
+      }
+    ]
+  },
+  "mutation": {
+    "user_id": "OR905938.1",
+    "ref_id": "NC_002640",
+    "ref_title": "Dengue virus 4, complete genome",
+    "alignment": {
+      "length": 1485,
+      "identity": 1367,
+      "similarity": 1367,
+      "gaps": 0,
+      "ref_aligned": "ATGCGATGCGTAGGAGTAGGAAACAGAGACTTTGTGGAAGGAGTCTCAGGTGGAGCATGGGTCGACCTGGTGCTAGAACATGGAGGATGCGTCACAACCATGGCCCAGGGAAAACCAACCTTGGATTTTGAACTGACTAAGACAACAGCCAAGGAAGTGGCTCTGTTAAGAACCTATTGCATTGAAGCCTCAATATCAAACATAACTACGGCAACAAGATGTCCAACGCAAGGAGAGCCTTATCTGAAAGAGGAACAGGACCAACAGTACATTTGCCGGAGAGATGTGGTAGACAGAGGGTGGGGCAATGGCTGTGGCTTGTTTGGAAAAGGAGGAGTTGTGACATGTGCGAAGTTTTCATGTTCGGGGAAGATAACAGGCAATTTGGTCCAAATTGAGAACCTTGAATACACAGTGGTTGTAACAGTCCACAATGGAGACACCCATGCAGTAGGAAATGACACATCCAATCATGGAGTTACAGCCATGATAACTCCCAGGTCACCATCGGTGGAAGTCAAATTGCCGGACTATGGAGAACTAACACTCGATTGTGAACCCAGGTCTGGAATTGACTTTAATGAGATGATTCTGATGAAAATGAAAAAGAAAACATGGCTCGTGCATAAGCAATGGTTTTTGGATCTGCCTCTTCCATGGACAGCAGGAGCAGACACATCAGAGGTTCACTGGAATTACAAAGAGAGAATGGTGACATTTAAGGTTCCTCATGCCAAGAGACAGGATGTGACAGTGCTGGGATCTCAGGAAGGAGCCATGCATTCTGCCCTCGCTGGAGCCACAGAAGTGGACTCCGGTGATGGAAATCACATGTTTGCAGGACATCTTAAGTGCAAAGTCCGTATGGAGAAATTGAGAATCAAGGGAATGTCATACACGATGTGTTCAGGAAAGTTTTCAATTGACAAAGAGATGGCAGAAACACAGCATGGGACAACAGTGGTGAAAGTCAAGTATGAAGGTGCTGGAGCTCCGTGTAAAGTCCCCATAGAGATAAGAGATGTAAACAAGGAAAAAGTGGTTGGGCGTATCATCTCATCCACCCCTTTGGCTGAGAATACCAACAGTGTAACCAACATAGAATTAGAACCCCCCTTTGGGGACAGCTACATAGTGATAGGTGTTGGAAACAGCGCATTAACACTCCATTGGTTCAGGAAAGGGAGTTCCATTGGCAAGATGTTTGAGTCCACATACAGAGGTGCAAAACGAATGGCCATTCTAGGTGAAACAGCTTGGGATTTTGGTTCCGTTGGTGGACTGTTCACATCATTGGGAAAGGCTGTGCACCAGGTTTTTGGAAGTGTGTATACAACCATGTTTGGAGGAGTCTCATGGATGATTAGAATCCTAATTGGGTTCTTAGTGTTGTGGATTGGCACGAACTCGAGGAACACTTCAATGGCTATGACGTGCATAGCTGTTGGAGGAATCACTCTGTTTCTGGGCTTCACAGTTCAAGCA",
+      "user_aligned": "ATGCGATGCGTAGGAGTGGGGAACAGAGACTTTGTGGAAGGAGTCTCAGGTGGAGCATGGGTCGATCTGGTGCTAGAACATGGAGGATGTGTCACAACCATGGCCCAGGGAAAACCAACCTTGGATTTTGAACTGATCAAGACAACAGCCAAGGAAGTGGCTCTGTTAAGAACCTATTGCATTGAAGCCTCCATATCAAATATAACCACGGCAACAAGATGTCCAACGCAAGGAGAGCCTTACCTCAAAGAGGAACAAGATCAACAGTACATCTGCCGGAGAGATGTGGTAGACAGAGGGTGGGGCAATGGCTGTGGCCTGTTTGGGAAAGGAGGAGTTGTGACATGTGCAAAGTTCTCATGCTCGGGGAAGATAACAGGCAACTTAGTCCAAGTTGAGAACCTAGAATACACAGTAGTTGTAACAGTCCACAATGGGGACACCCATGCGGTAGGAAATGACACATCCAACCACGGAGTGACAGCCACGATAACCCCCAGGTCACCATCGGTAGAAGTCAAATTGCCGGACTATGGAGAATTGACACTCGATTGTGAGCCCAGATCCGGAATCGACTTTAATGAGATGATCCTGATGACAATGGAAAAGAAAACGTGGCTTGTGCACAAGCAGTGGTTTTTGGATTTACCTCTACCATGGACAGCAGGAGCAGACACGTCAGAAGTTCATTGGAATCACAAAGAAAGAATGGTGACGTTCAAGGTCCCTCATGCCAAGAGACAGGACGTGACAGTGCTAGGATCCCAGGAAGGAGCCATGCATTCAGCCCTCGCCGGAGCCACAGAAGTAGACTCCGGTGATGGAAACCACATGTTTGCAGGACATTTGAAGTGCAAAGTTCGTATGGAGAAATTGAGGATCAAGGGAATGTCATACACTATGTGCTCAGGGAAGTTCTCAATTGACAAAGAAATGGCAGAAACACAGCATGGGACAACAGTGGTAAAAGTCAAGTATGAGGGTGCTGGAGCTCCATGTAAAGTTCCCATAGAGATAAGAGATGTGAACAAGGAAAAAGTGGTCGGGCGCATCATCTCATCTACCCCTTTTGCTGAGAATACCAACAGTGTGACCAGCATAGAATTGGAGCCCCCTTTTGGGGATAGCTACATAGTGATAGGTGTGGGAGACAGCGCACTAACACTCCATTGGTTCAGGAAAGGGAGTTCCATCGGTAAGATGTTTGAGTCCACATACAGAGGCGCAAAGCGCATGGCCATTCTAGGTGAAACAGCCTGGGATTTTGGTTCTGTTGGTGGACTGCTCACATCATTGGGAAAGGCTGTACACCAAGTCTTTGGTAGTGTGTATACAACTATGTTTGGAGGAGTCTCATGGATGGTTAGAATCCTAATCGGGTTCTTAGTACTGTGGATTGGCACAAATTCAAGAAACACCTCAATGGCAATGTCGTGCATAGCTGTTGGAGGGATTACTTTGTTTCTGGGTTTCACAGTTCAAGCA",
+      "match_line": "||||||||||||||||| || |||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||  ||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||| ||||| ||||||||||||||||||||||||||||||||||| || ||||||||||| || ||||||||||| ||||||||||||||||||||||||||||||||||||||||||||| ||||||| ||||||||||||||||||||||| ||||| ||||| |||||||||||||||||||| || |||||| |||||||||| ||||||||||| |||||||||||||||||||| ||||||||||| |||||||||||||||||||| || ||||| ||||||| |||||| ||||||||||||||||| ||||||||||||||||||||||||||| | |||||||||||||| ||||| || ||||| ||||||||||||||||| ||||||| |||| |||||||||| ||||| ||||| ||||| |||||||||||| | ||||| ||||||||||||||||||||||| ||||| ||||| |||||| ||||||| ||||||||||| || ||||| |||||||||||||||||||| ||||||||||| ||||| |||||||||||||||||||| |||||||| |||||||||||||| ||||||||||||||||| |||||||||||||||||| | ||||||||||| ||||||||||||||||| |||||||||||||||||||| ||||| ||||| ||||| |||||||||||||| |||||||||||||||||||||||||||||||| |||||||||||||| |||||||||||||| |||||||| |||||||||||||||||||| ||||||||||||||||| ||||| ||||||||||| |||||||| |||||||||||||||||||| |||| ||||||||| || ||||| |||||||| |||||||||||||||||||| ||| |||||||| |||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||| ||||| || ||||||||||||||||||||||| |||||||||||||| |||||||||||| |||||||||||||||||||||| ||||| || ||||| |||||||||||||| |||||||||||||||||||||||| ||||||||||||| |||||||||||  ||||||||||||| || || || ||||| |||||||| ||| ||||||||||||||||||| || ||| |||||||||| |||||||||||||||",
+      "ref_start": 939,
+      "ref_end": 2423,
+      "score": 2380.0,
+      "evalue": 0.0,
+      "percent_identity": 92.05,
+      "query_coverage": 100.0
+    },
+    "mutations": [
+      {
+        "position": 18,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.18A>G"
+      },
+      {
+        "position": 21,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.21A>G"
+      },
+      {
+        "position": 66,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.66C>T"
+      },
+      {
+        "position": 90,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.90C>T"
+      },
+      {
+        "position": 137,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.137C>T"
+      },
+      {
+        "position": 138,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.138T>C"
+      },
+      {
+        "position": 192,
+        "ref": "A",
+        "user": "C",
+        "mutation": "c.192A>C"
+      },
+      {
+        "position": 201,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.201C>T"
+      },
+      {
+        "position": 207,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.207T>C"
+      },
+      {
+        "position": 243,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.243T>C"
+      },
+      {
+        "position": 246,
+        "ref": "G",
+        "user": "C",
+        "mutation": "c.246G>C"
+      },
+      {
+        "position": 258,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.258G>A"
+      },
+      {
+        "position": 261,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.261C>T"
+      },
+      {
+        "position": 273,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.273T>C"
+      },
+      {
+        "position": 319,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.319T>C"
+      },
+      {
+        "position": 327,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.327A>G"
+      },
+      {
+        "position": 351,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.351G>A"
+      },
+      {
+        "position": 357,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.357T>C"
+      },
+      {
+        "position": 363,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.363T>C"
+      },
+      {
+        "position": 384,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.384T>C"
+      },
+      {
+        "position": 387,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.387G>A"
+      },
+      {
+        "position": 394,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.394A>G"
+      },
+      {
+        "position": 405,
+        "ref": "T",
+        "user": "A",
+        "mutation": "c.405T>A"
+      },
+      {
+        "position": 417,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.417G>A"
+      },
+      {
+        "position": 438,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.438A>G"
+      },
+      {
+        "position": 450,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.450A>G"
+      },
+      {
+        "position": 471,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.471T>C"
+      },
+      {
+        "position": 474,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.474T>C"
+      },
+      {
+        "position": 480,
+        "ref": "T",
+        "user": "G",
+        "mutation": "c.480T>G"
+      },
+      {
+        "position": 488,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.488T>C"
+      },
+      {
+        "position": 495,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.495T>C"
+      },
+      {
+        "position": 513,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.513G>A"
+      },
+      {
+        "position": 541,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.541C>T"
+      },
+      {
+        "position": 543,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.543A>G"
+      },
+      {
+        "position": 558,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.558A>G"
+      },
+      {
+        "position": 564,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.564G>A"
+      },
+      {
+        "position": 567,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.567T>C"
+      },
+      {
+        "position": 573,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.573T>C"
+      },
+      {
+        "position": 591,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.591T>C"
+      },
+      {
+        "position": 599,
+        "ref": "A",
+        "user": "C",
+        "mutation": "c.599A>C"
+      },
+      {
+        "position": 604,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.604A>G"
+      },
+      {
+        "position": 615,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.615A>G"
+      },
+      {
+        "position": 621,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.621C>T"
+      },
+      {
+        "position": 627,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.627T>C"
+      },
+      {
+        "position": 633,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.633A>G"
+      },
+      {
+        "position": 646,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.646C>T"
+      },
+      {
+        "position": 648,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.648G>A"
+      },
+      {
+        "position": 654,
+        "ref": "T",
+        "user": "A",
+        "mutation": "c.654T>A"
+      },
+      {
+        "position": 678,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.678A>G"
+      },
+      {
+        "position": 684,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.684G>A"
+      },
+      {
+        "position": 690,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.690C>T"
+      },
+      {
+        "position": 697,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.697T>C"
+      },
+      {
+        "position": 705,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.705G>A"
+      },
+      {
+        "position": 717,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.717A>G"
+      },
+      {
+        "position": 720,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.720T>C"
+      },
+      {
+        "position": 726,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.726T>C"
+      },
+      {
+        "position": 747,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.747T>C"
+      },
+      {
+        "position": 759,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.759G>A"
+      },
+      {
+        "position": 765,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.765T>C"
+      },
+      {
+        "position": 786,
+        "ref": "T",
+        "user": "A",
+        "mutation": "c.786T>A"
+      },
+      {
+        "position": 795,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.795T>C"
+      },
+      {
+        "position": 810,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.810G>A"
+      },
+      {
+        "position": 828,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.828T>C"
+      },
+      {
+        "position": 847,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.847C>T"
+      },
+      {
+        "position": 849,
+        "ref": "T",
+        "user": "G",
+        "mutation": "c.849T>G"
+      },
+      {
+        "position": 861,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.861C>T"
+      },
+      {
+        "position": 879,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.879A>G"
+      },
+      {
+        "position": 900,
+        "ref": "G",
+        "user": "T",
+        "mutation": "c.900G>T"
+      },
+      {
+        "position": 906,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.906T>C"
+      },
+      {
+        "position": 912,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.912A>G"
+      },
+      {
+        "position": 918,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.918T>C"
+      },
+      {
+        "position": 933,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.933G>A"
+      },
+      {
+        "position": 966,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.966G>A"
+      },
+      {
+        "position": 981,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.981A>G"
+      },
+      {
+        "position": 996,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.996G>A"
+      },
+      {
+        "position": 1005,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1005C>T"
+      },
+      {
+        "position": 1026,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1026A>G"
+      },
+      {
+        "position": 1044,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1044T>C"
+      },
+      {
+        "position": 1050,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1050T>C"
+      },
+      {
+        "position": 1062,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1062C>T"
+      },
+      {
+        "position": 1071,
+        "ref": "G",
+        "user": "T",
+        "mutation": "c.1071G>T"
+      },
+      {
+        "position": 1092,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1092A>G"
+      },
+      {
+        "position": 1097,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1097A>G"
+      },
+      {
+        "position": 1107,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1107A>G"
+      },
+      {
+        "position": 1110,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1110A>G"
+      },
+      {
+        "position": 1116,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1116C>T"
+      },
+      {
+        "position": 1125,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1125C>T"
+      },
+      {
+        "position": 1146,
+        "ref": "T",
+        "user": "G",
+        "mutation": "c.1146T>G"
+      },
+      {
+        "position": 1150,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1150A>G"
+      },
+      {
+        "position": 1159,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1159T>C"
+      },
+      {
+        "position": 1194,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1194T>C"
+      },
+      {
+        "position": 1197,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1197C>T"
+      },
+      {
+        "position": 1224,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1224T>C"
+      },
+      {
+        "position": 1230,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1230A>G"
+      },
+      {
+        "position": 1233,
+        "ref": "A",
+        "user": "C",
+        "mutation": "c.1233A>C"
+      },
+      {
+        "position": 1257,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1257T>C"
+      },
+      {
+        "position": 1272,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1272C>T"
+      },
+      {
+        "position": 1285,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1285T>C"
+      },
+      {
+        "position": 1308,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1308G>A"
+      },
+      {
+        "position": 1314,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1314G>A"
+      },
+      {
+        "position": 1317,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1317T>C"
+      },
+      {
+        "position": 1323,
+        "ref": "A",
+        "user": "T",
+        "mutation": "c.1323A>T"
+      },
+      {
+        "position": 1338,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1338C>T"
+      },
+      {
+        "position": 1363,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1363A>G"
+      },
+      {
+        "position": 1377,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1377T>C"
+      },
+      {
+        "position": 1389,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1389G>A"
+      },
+      {
+        "position": 1390,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1390T>C"
+      },
+      {
+        "position": 1404,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1404G>A"
+      },
+      {
+        "position": 1407,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1407C>T"
+      },
+      {
+        "position": 1410,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1410G>A"
+      },
+      {
+        "position": 1413,
+        "ref": "G",
+        "user": "A",
+        "mutation": "c.1413G>A"
+      },
+      {
+        "position": 1419,
+        "ref": "T",
+        "user": "C",
+        "mutation": "c.1419T>C"
+      },
+      {
+        "position": 1428,
+        "ref": "T",
+        "user": "A",
+        "mutation": "c.1428T>A"
+      },
+      {
+        "position": 1432,
+        "ref": "A",
+        "user": "T",
+        "mutation": "c.1432A>T"
+      },
+      {
+        "position": 1452,
+        "ref": "A",
+        "user": "G",
+        "mutation": "c.1452A>G"
+      },
+      {
+        "position": 1455,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1455C>T"
+      },
+      {
+        "position": 1459,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1459C>T"
+      },
+      {
+        "position": 1470,
+        "ref": "C",
+        "user": "T",
+        "mutation": "c.1470C>T"
+      }
+    ],
+    "mutation_scatter_html": "mutation_scatter_OR905938.1_NC_002640_hsp.html",
+    "mutation_track_html": "mutation_track_OR905938.1_NC_002640_hsp.html"
+  },
+  "variant_table": {
+    "gene_symbol": "BRCA1",
+    "variants": [
+      {
+        "Variant ID": "rs2552282559",
+        "Position": "17:17:43127349",
+        "Change": "G/C",
+        "Description": "snv",
+        "PubMed IDs": [],
+        "rsID": "rs2552282559",
+        "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552282559"
+      },
+      {
+        "Variant ID": "rs2552281972",
+        "Position": "17:17:43127232",
+        "Change": "A/T",
+        "Description": "snv",
+        "PubMed IDs": [],
+        "rsID": "rs2552281972",
+        "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281972"
+      },
+      {
+        "Variant ID": "rs2552281880",
+        "Position": "17:17:43127053",
+        "Change": "A/C/G/T",
+        "Description": "del",
+        "PubMed IDs": [],
+        "rsID": "rs2552281880",
+        "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281880"
+      },
+      {
+        "Variant ID": "rs2552281808",
+        "Position": "17:17:43126996",
+        "Change": "C/T",
+        "Description": "snv",
+        "PubMed IDs": [],
+        "rsID": "rs2552281808",
+        "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281808"
+      },
+      {
+        "Variant ID": "rs2552281780",
+        "Position": "17:17:43126982",
+        "Change": "G/T",
+        "Description": "snv",
+        "PubMed IDs": [],
+        "rsID": "rs2552281780",
+        "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281780"
+      }
+    ]
+  },
+  "pubmed": {
+    "search_term": "BRCA1 AND mutation",
+    "papers": [
+      {
+        "pmid": "40968764",
+        "title": "Exploring the efficacy of PARP inhibitors in metastatic castration-resistant prostate cancer with homologous recombination repair alteration: a meta-analysis based on subgroups and reconstructed individual patient data.",
+        "authors": "Zhang Fuxun, Luo Zhirong, Xiong Yang et al.",
+        "journal": "International journal of surgery (London, England)",
+        "year": "2025",
+        "abstract": "Treatment for metastatic castration-resistant prostate cancer (mCRPC) harboring homologous recombination repair (HRR) alteration remains a challenge. Recently published trials have evaluated the Poly (ADP-ribose) polymerase inhibitors (PARPIs) in mCRPC. However, the efficacy in subgroup with specific HRR gene mutation and treatment protocol requires further elucidation. This meta-analysis aims to explore the efficacy of PARPIs based on subgroups and reconstructed individual patient data (IPD). L..."
+      },
+      {
+        "pmid": "40966517",
+        "title": "Profiling BRCA1-BRCT interactions and their functional relevance at amino acid resolution.",
+        "authors": "Mangkusaputra Venda, Murachelli Andrea G, Yu Zhengzhou et al.",
+        "journal": "Nucleic acids research",
+        "year": "2025",
+        "abstract": "BRCA1 (breast cancer-associated protein 1) plays a central role in homologous recombination (HR) through interactions with multiple proteins across its various domains. The C-terminal BRCT domains bind HR regulators such as ABRAXAS1, CtIP, and BRIP1, each contributing to distinct, sometimes opposing, functions. While pathogenic mutations frequently cluster within the canonical BRCT phospho-binding pocket, the broader mutational landscape and its functional consequences remain poorly understood. ..."
+      },
+      {
+        "pmid": "40965863",
+        "title": "Predictive genomic medicine enlarges the spectrum of predisposing mutations for head and neck cancers via a panel of 56 genes selected for human neoplasia in Southern Italy: a pilot study.",
+        "authors": "Di Maggio Federica, Togo Giulia, Pavone Ettore et al.",
+        "journal": "Clinical chemistry and laboratory medicine",
+        "year": "2025",
+        "abstract": "Oral squamous cell carcinoma (OSCC) is the most prevalent form of squamous cell carcinomas of the head and neck (SCCHN), accounting for over 90 % of all oral cavity malignancies (approximately 275,000 new cases are worldwide diagnosed annually). Early-stage oral squamous cell carcinoma (T1 and T2) has a 5-year survival rate of up to 80 %. Survival rates decrease to 20-30 % at later stages (T3-T4). Each year, there are between 275,000 and 300,000 new cases of OSCC, and over 150,000 deaths worldwi..."
+      }
+    ]
+  },
+  "full_pipeline": {
+    "blast": {
+      "sequence_id": "OR905938.1",
+      "sequence_type": "nucleotide",
+      "hits": [
+        {
+          "Accession": "OR905937",
+          "Title": "Dengue virus type 4 isolate RTK_06/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333792|gb|OR905938.1| Dengue virus type 4 isolate RTK_08/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333796|gb|OR905940.1| Dengue virus type 4 isolate FRK_20/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333800|gb|OR905942.1| Dengue virus type 4 isolate YNR_19/PGI/2020 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+          "Identity (%)": 100.0,
+          "E-value": 0.0,
+          "Score": 2970.0,
+          "Coverage (%)": 100.0
+        },
+        {
+          "Accession": "OR905943",
+          "Title": "Dengue virus type 4 isolate JM_1396/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+          "Identity (%)": 99.93,
+          "E-value": 0.0,
+          "Score": 2965.0,
+          "Coverage (%)": 100.0
+        },
+        {
+          "Accession": "OR905946",
+          "Title": "Dengue virus type 4 isolate FIP_41/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds >gi|2626333826|gb|OR905955.1| Dengue virus type 4 isolate PKL_60/PGI/2021 polyprotein, envelope protein E region, (POLY) gene, partial cds",
+          "Identity (%)": 99.93,
+          "E-value": 0.0,
+          "Score": 2965.0,
+          "Coverage (%)": 100.0
+        }
+      ]
+    },
+    "mutation": {
+      "user_id": "OR905938.1",
+      "ref_id": "NC_002640",
+      "ref_title": "Dengue virus 4, complete genome",
+      "alignment": {
+        "length": 1485,
+        "identity": 1367,
+        "similarity": 1367,
+        "gaps": 0,
+        "ref_aligned": "ATGCGATGCGTAGGAGTAGGAAACAGAGACTTTGTGGAAGGAGTCTCAGGTGGAGCATGGGTCGACCTGGTGCTAGAACATGGAGGATGCGTCACAACCATGGCCCAGGGAAAACCAACCTTGGATTTTGAACTGACTAAGACAACAGCCAAGGAAGTGGCTCTGTTAAGAACCTATTGCATTGAAGCCTCAATATCAAACATAACTACGGCAACAAGATGTCCAACGCAAGGAGAGCCTTATCTGAAAGAGGAACAGGACCAACAGTACATTTGCCGGAGAGATGTGGTAGACAGAGGGTGGGGCAATGGCTGTGGCTTGTTTGGAAAAGGAGGAGTTGTGACATGTGCGAAGTTTTCATGTTCGGGGAAGATAACAGGCAATTTGGTCCAAATTGAGAACCTTGAATACACAGTGGTTGTAACAGTCCACAATGGAGACACCCATGCAGTAGGAAATGACACATCCAATCATGGAGTTACAGCCATGATAACTCCCAGGTCACCATCGGTGGAAGTCAAATTGCCGGACTATGGAGAACTAACACTCGATTGTGAACCCAGGTCTGGAATTGACTTTAATGAGATGATTCTGATGAAAATGAAAAAGAAAACATGGCTCGTGCATAAGCAATGGTTTTTGGATCTGCCTCTTCCATGGACAGCAGGAGCAGACACATCAGAGGTTCACTGGAATTACAAAGAGAGAATGGTGACATTTAAGGTTCCTCATGCCAAGAGACAGGATGTGACAGTGCTGGGATCTCAGGAAGGAGCCATGCATTCTGCCCTCGCTGGAGCCACAGAAGTGGACTCCGGTGATGGAAATCACATGTTTGCAGGACATCTTAAGTGCAAAGTCCGTATGGAGAAATTGAGAATCAAGGGAATGTCATACACGATGTGTTCAGGAAAGTTTTCAATTGACAAAGAGATGGCAGAAACACAGCATGGGACAACAGTGGTGAAAGTCAAGTATGAAGGTGCTGGAGCTCCGTGTAAAGTCCCCATAGAGATAAGAGATGTAAACAAGGAAAAAGTGGTTGGGCGTATCATCTCATCCACCCCTTTGGCTGAGAATACCAACAGTGTAACCAACATAGAATTAGAACCCCCCTTTGGGGACAGCTACATAGTGATAGGTGTTGGAAACAGCGCATTAACACTCCATTGGTTCAGGAAAGGGAGTTCCATTGGCAAGATGTTTGAGTCCACATACAGAGGTGCAAAACGAATGGCCATTCTAGGTGAAACAGCTTGGGATTTTGGTTCCGTTGGTGGACTGTTCACATCATTGGGAAAGGCTGTGCACCAGGTTTTTGGAAGTGTGTATACAACCATGTTTGGAGGAGTCTCATGGATGATTAGAATCCTAATTGGGTTCTTAGTGTTGTGGATTGGCACGAACTCGAGGAACACTTCAATGGCTATGACGTGCATAGCTGTTGGAGGAATCACTCTGTTTCTGGGCTTCACAGTTCAAGCA",
+        "user_aligned": "ATGCGATGCGTAGGAGTGGGGAACAGAGACTTTGTGGAAGGAGTCTCAGGTGGAGCATGGGTCGATCTGGTGCTAGAACATGGAGGATGTGTCACAACCATGGCCCAGGGAAAACCAACCTTGGATTTTGAACTGATCAAGACAACAGCCAAGGAAGTGGCTCTGTTAAGAACCTATTGCATTGAAGCCTCCATATCAAATATAACCACGGCAACAAGATGTCCAACGCAAGGAGAGCCTTACCTCAAAGAGGAACAAGATCAACAGTACATCTGCCGGAGAGATGTGGTAGACAGAGGGTGGGGCAATGGCTGTGGCCTGTTTGGGAAAGGAGGAGTTGTGACATGTGCAAAGTTCTCATGCTCGGGGAAGATAACAGGCAACTTAGTCCAAGTTGAGAACCTAGAATACACAGTAGTTGTAACAGTCCACAATGGGGACACCCATGCGGTAGGAAATGACACATCCAACCACGGAGTGACAGCCACGATAACCCCCAGGTCACCATCGGTAGAAGTCAAATTGCCGGACTATGGAGAATTGACACTCGATTGTGAGCCCAGATCCGGAATCGACTTTAATGAGATGATCCTGATGACAATGGAAAAGAAAACGTGGCTTGTGCACAAGCAGTGGTTTTTGGATTTACCTCTACCATGGACAGCAGGAGCAGACACGTCAGAAGTTCATTGGAATCACAAAGAAAGAATGGTGACGTTCAAGGTCCCTCATGCCAAGAGACAGGACGTGACAGTGCTAGGATCCCAGGAAGGAGCCATGCATTCAGCCCTCGCCGGAGCCACAGAAGTAGACTCCGGTGATGGAAACCACATGTTTGCAGGACATTTGAAGTGCAAAGTTCGTATGGAGAAATTGAGGATCAAGGGAATGTCATACACTATGTGCTCAGGGAAGTTCTCAATTGACAAAGAAATGGCAGAAACACAGCATGGGACAACAGTGGTAAAAGTCAAGTATGAGGGTGCTGGAGCTCCATGTAAAGTTCCCATAGAGATAAGAGATGTGAACAAGGAAAAAGTGGTCGGGCGCATCATCTCATCTACCCCTTTTGCTGAGAATACCAACAGTGTGACCAGCATAGAATTGGAGCCCCCTTTTGGGGATAGCTACATAGTGATAGGTGTGGGAGACAGCGCACTAACACTCCATTGGTTCAGGAAAGGGAGTTCCATCGGTAAGATGTTTGAGTCCACATACAGAGGCGCAAAGCGCATGGCCATTCTAGGTGAAACAGCCTGGGATTTTGGTTCTGTTGGTGGACTGCTCACATCATTGGGAAAGGCTGTACACCAAGTCTTTGGTAGTGTGTATACAACTATGTTTGGAGGAGTCTCATGGATGGTTAGAATCCTAATCGGGTTCTTAGTACTGTGGATTGGCACAAATTCAAGAAACACCTCAATGGCAATGTCGTGCATAGCTGTTGGAGGGATTACTTTGTTTCTGGGTTTCACAGTTCAAGCA",
+        "match_line": "||||||||||||||||| || |||||||||||||||||||||||||||||||||||||||||||| ||||||||||||||||||||||| ||||||||||||||||||||||||||||||||||||||||||||||  ||||||||||||||||||||||||||||||||||||||||||||||||||||| |||||||| ||||| ||||||||||||||||||||||||||||||||||| || ||||||||||| || ||||||||||| ||||||||||||||||||||||||||||||||||||||||||||| ||||||| ||||||||||||||||||||||| ||||| ||||| |||||||||||||||||||| || |||||| |||||||||| ||||||||||| |||||||||||||||||||| ||||||||||| |||||||||||||||||||| || ||||| ||||||| |||||| ||||||||||||||||| ||||||||||||||||||||||||||| | |||||||||||||| ||||| || ||||| ||||||||||||||||| ||||||| |||| |||||||||| ||||| ||||| ||||| |||||||||||| | ||||| ||||||||||||||||||||||| ||||| ||||| |||||| ||||||| ||||||||||| || ||||| |||||||||||||||||||| ||||||||||| ||||| |||||||||||||||||||| |||||||| |||||||||||||| ||||||||||||||||| |||||||||||||||||| | ||||||||||| ||||||||||||||||| |||||||||||||||||||| ||||| ||||| ||||| |||||||||||||| |||||||||||||||||||||||||||||||| |||||||||||||| |||||||||||||| |||||||| |||||||||||||||||||| ||||||||||||||||| ||||| ||||||||||| |||||||| |||||||||||||||||||| |||| ||||||||| || ||||| |||||||| |||||||||||||||||||| ||| |||||||| |||||||||||||||||||||||||||||||||| || |||||||||||||||||||||||||| ||||| || ||||||||||||||||||||||| |||||||||||||| |||||||||||| |||||||||||||||||||||| ||||| || ||||| |||||||||||||| |||||||||||||||||||||||| ||||||||||||| |||||||||||  ||||||||||||| || || || ||||| |||||||| ||| ||||||||||||||||||| || ||| |||||||||| |||||||||||||||",
+        "ref_start": 939,
+        "ref_end": 2423,
+        "score": 2380.0,
+        "evalue": 0.0,
+        "percent_identity": 92.05,
+        "query_coverage": 100.0
+      },
+      "mutations": [
+        {
+          "position": 18,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.18A>G"
+        },
+        {
+          "position": 21,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.21A>G"
+        },
+        {
+          "position": 66,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.66C>T"
+        },
+        {
+          "position": 90,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.90C>T"
+        },
+        {
+          "position": 137,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.137C>T"
+        },
+        {
+          "position": 138,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.138T>C"
+        },
+        {
+          "position": 192,
+          "ref": "A",
+          "user": "C",
+          "mutation": "c.192A>C"
+        },
+        {
+          "position": 201,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.201C>T"
+        },
+        {
+          "position": 207,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.207T>C"
+        },
+        {
+          "position": 243,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.243T>C"
+        },
+        {
+          "position": 246,
+          "ref": "G",
+          "user": "C",
+          "mutation": "c.246G>C"
+        },
+        {
+          "position": 258,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.258G>A"
+        },
+        {
+          "position": 261,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.261C>T"
+        },
+        {
+          "position": 273,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.273T>C"
+        },
+        {
+          "position": 319,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.319T>C"
+        },
+        {
+          "position": 327,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.327A>G"
+        },
+        {
+          "position": 351,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.351G>A"
+        },
+        {
+          "position": 357,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.357T>C"
+        },
+        {
+          "position": 363,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.363T>C"
+        },
+        {
+          "position": 384,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.384T>C"
+        },
+        {
+          "position": 387,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.387G>A"
+        },
+        {
+          "position": 394,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.394A>G"
+        },
+        {
+          "position": 405,
+          "ref": "T",
+          "user": "A",
+          "mutation": "c.405T>A"
+        },
+        {
+          "position": 417,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.417G>A"
+        },
+        {
+          "position": 438,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.438A>G"
+        },
+        {
+          "position": 450,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.450A>G"
+        },
+        {
+          "position": 471,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.471T>C"
+        },
+        {
+          "position": 474,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.474T>C"
+        },
+        {
+          "position": 480,
+          "ref": "T",
+          "user": "G",
+          "mutation": "c.480T>G"
+        },
+        {
+          "position": 488,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.488T>C"
+        },
+        {
+          "position": 495,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.495T>C"
+        },
+        {
+          "position": 513,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.513G>A"
+        },
+        {
+          "position": 541,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.541C>T"
+        },
+        {
+          "position": 543,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.543A>G"
+        },
+        {
+          "position": 558,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.558A>G"
+        },
+        {
+          "position": 564,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.564G>A"
+        },
+        {
+          "position": 567,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.567T>C"
+        },
+        {
+          "position": 573,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.573T>C"
+        },
+        {
+          "position": 591,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.591T>C"
+        },
+        {
+          "position": 599,
+          "ref": "A",
+          "user": "C",
+          "mutation": "c.599A>C"
+        },
+        {
+          "position": 604,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.604A>G"
+        },
+        {
+          "position": 615,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.615A>G"
+        },
+        {
+          "position": 621,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.621C>T"
+        },
+        {
+          "position": 627,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.627T>C"
+        },
+        {
+          "position": 633,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.633A>G"
+        },
+        {
+          "position": 646,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.646C>T"
+        },
+        {
+          "position": 648,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.648G>A"
+        },
+        {
+          "position": 654,
+          "ref": "T",
+          "user": "A",
+          "mutation": "c.654T>A"
+        },
+        {
+          "position": 678,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.678A>G"
+        },
+        {
+          "position": 684,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.684G>A"
+        },
+        {
+          "position": 690,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.690C>T"
+        },
+        {
+          "position": 697,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.697T>C"
+        },
+        {
+          "position": 705,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.705G>A"
+        },
+        {
+          "position": 717,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.717A>G"
+        },
+        {
+          "position": 720,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.720T>C"
+        },
+        {
+          "position": 726,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.726T>C"
+        },
+        {
+          "position": 747,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.747T>C"
+        },
+        {
+          "position": 759,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.759G>A"
+        },
+        {
+          "position": 765,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.765T>C"
+        },
+        {
+          "position": 786,
+          "ref": "T",
+          "user": "A",
+          "mutation": "c.786T>A"
+        },
+        {
+          "position": 795,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.795T>C"
+        },
+        {
+          "position": 810,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.810G>A"
+        },
+        {
+          "position": 828,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.828T>C"
+        },
+        {
+          "position": 847,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.847C>T"
+        },
+        {
+          "position": 849,
+          "ref": "T",
+          "user": "G",
+          "mutation": "c.849T>G"
+        },
+        {
+          "position": 861,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.861C>T"
+        },
+        {
+          "position": 879,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.879A>G"
+        },
+        {
+          "position": 900,
+          "ref": "G",
+          "user": "T",
+          "mutation": "c.900G>T"
+        },
+        {
+          "position": 906,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.906T>C"
+        },
+        {
+          "position": 912,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.912A>G"
+        },
+        {
+          "position": 918,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.918T>C"
+        },
+        {
+          "position": 933,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.933G>A"
+        },
+        {
+          "position": 966,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.966G>A"
+        },
+        {
+          "position": 981,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.981A>G"
+        },
+        {
+          "position": 996,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.996G>A"
+        },
+        {
+          "position": 1005,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1005C>T"
+        },
+        {
+          "position": 1026,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1026A>G"
+        },
+        {
+          "position": 1044,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1044T>C"
+        },
+        {
+          "position": 1050,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1050T>C"
+        },
+        {
+          "position": 1062,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1062C>T"
+        },
+        {
+          "position": 1071,
+          "ref": "G",
+          "user": "T",
+          "mutation": "c.1071G>T"
+        },
+        {
+          "position": 1092,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1092A>G"
+        },
+        {
+          "position": 1097,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1097A>G"
+        },
+        {
+          "position": 1107,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1107A>G"
+        },
+        {
+          "position": 1110,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1110A>G"
+        },
+        {
+          "position": 1116,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1116C>T"
+        },
+        {
+          "position": 1125,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1125C>T"
+        },
+        {
+          "position": 1146,
+          "ref": "T",
+          "user": "G",
+          "mutation": "c.1146T>G"
+        },
+        {
+          "position": 1150,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1150A>G"
+        },
+        {
+          "position": 1159,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1159T>C"
+        },
+        {
+          "position": 1194,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1194T>C"
+        },
+        {
+          "position": 1197,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1197C>T"
+        },
+        {
+          "position": 1224,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1224T>C"
+        },
+        {
+          "position": 1230,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1230A>G"
+        },
+        {
+          "position": 1233,
+          "ref": "A",
+          "user": "C",
+          "mutation": "c.1233A>C"
+        },
+        {
+          "position": 1257,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1257T>C"
+        },
+        {
+          "position": 1272,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1272C>T"
+        },
+        {
+          "position": 1285,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1285T>C"
+        },
+        {
+          "position": 1308,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1308G>A"
+        },
+        {
+          "position": 1314,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1314G>A"
+        },
+        {
+          "position": 1317,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1317T>C"
+        },
+        {
+          "position": 1323,
+          "ref": "A",
+          "user": "T",
+          "mutation": "c.1323A>T"
+        },
+        {
+          "position": 1338,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1338C>T"
+        },
+        {
+          "position": 1363,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1363A>G"
+        },
+        {
+          "position": 1377,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1377T>C"
+        },
+        {
+          "position": 1389,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1389G>A"
+        },
+        {
+          "position": 1390,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1390T>C"
+        },
+        {
+          "position": 1404,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1404G>A"
+        },
+        {
+          "position": 1407,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1407C>T"
+        },
+        {
+          "position": 1410,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1410G>A"
+        },
+        {
+          "position": 1413,
+          "ref": "G",
+          "user": "A",
+          "mutation": "c.1413G>A"
+        },
+        {
+          "position": 1419,
+          "ref": "T",
+          "user": "C",
+          "mutation": "c.1419T>C"
+        },
+        {
+          "position": 1428,
+          "ref": "T",
+          "user": "A",
+          "mutation": "c.1428T>A"
+        },
+        {
+          "position": 1432,
+          "ref": "A",
+          "user": "T",
+          "mutation": "c.1432A>T"
+        },
+        {
+          "position": 1452,
+          "ref": "A",
+          "user": "G",
+          "mutation": "c.1452A>G"
+        },
+        {
+          "position": 1455,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1455C>T"
+        },
+        {
+          "position": 1459,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1459C>T"
+        },
+        {
+          "position": 1470,
+          "ref": "C",
+          "user": "T",
+          "mutation": "c.1470C>T"
+        }
+      ],
+      "mutation_scatter_html": "mutation_scatter_OR905938.1_NC_002640_hsp.html",
+      "mutation_track_html": "mutation_track_OR905938.1_NC_002640_hsp.html"
+    },
+    "variant_table": {
+      "gene_symbol": "BRCA1",
+      "variants": [
+        {
+          "Variant ID": "rs2552282559",
+          "Position": "17:17:43127349",
+          "Change": "G/C",
+          "Description": "snv",
+          "PubMed IDs": [],
+          "rsID": "rs2552282559",
+          "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552282559"
+        },
+        {
+          "Variant ID": "rs2552281972",
+          "Position": "17:17:43127232",
+          "Change": "A/T",
+          "Description": "snv",
+          "PubMed IDs": [],
+          "rsID": "rs2552281972",
+          "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281972"
+        },
+        {
+          "Variant ID": "rs2552281880",
+          "Position": "17:17:43127053",
+          "Change": "A/C/G/T",
+          "Description": "del",
+          "PubMed IDs": [],
+          "rsID": "rs2552281880",
+          "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281880"
+        },
+        {
+          "Variant ID": "rs2552281808",
+          "Position": "17:17:43126996",
+          "Change": "C/T",
+          "Description": "snv",
+          "PubMed IDs": [],
+          "rsID": "rs2552281808",
+          "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281808"
+        },
+        {
+          "Variant ID": "rs2552281780",
+          "Position": "17:17:43126982",
+          "Change": "G/T",
+          "Description": "snv",
+          "PubMed IDs": [],
+          "rsID": "rs2552281780",
+          "Link": "https://www.ncbi.nlm.nih.gov/snp/rs2552281780"
+        }
+      ]
+    },
+    "pubmed": {
+      "search_term": "BRCA1 AND mutation",
+      "papers": [
+        {
+          "pmid": "40968764",
+          "title": "Exploring the efficacy of PARP inhibitors in metastatic castration-resistant prostate cancer with homologous recombination repair alteration: a meta-analysis based on subgroups and reconstructed individual patient data.",
+          "authors": "Zhang Fuxun, Luo Zhirong, Xiong Yang et al.",
+          "journal": "International journal of surgery (London, England)",
+          "year": "2025",
+          "abstract": "Treatment for metastatic castration-resistant prostate cancer (mCRPC) harboring homologous recombination repair (HRR) alteration remains a challenge. Recently published trials have evaluated the Poly (ADP-ribose) polymerase inhibitors (PARPIs) in mCRPC. However, the efficacy in subgroup with specific HRR gene mutation and treatment protocol requires further elucidation. This meta-analysis aims to explore the efficacy of PARPIs based on subgroups and reconstructed individual patient data (IPD). L..."
+        },
+        {
+          "pmid": "40966517",
+          "title": "Profiling BRCA1-BRCT interactions and their functional relevance at amino acid resolution.",
+          "authors": "Mangkusaputra Venda, Murachelli Andrea G, Yu Zhengzhou et al.",
+          "journal": "Nucleic acids research",
+          "year": "2025",
+          "abstract": "BRCA1 (breast cancer-associated protein 1) plays a central role in homologous recombination (HR) through interactions with multiple proteins across its various domains. The C-terminal BRCT domains bind HR regulators such as ABRAXAS1, CtIP, and BRIP1, each contributing to distinct, sometimes opposing, functions. While pathogenic mutations frequently cluster within the canonical BRCT phospho-binding pocket, the broader mutational landscape and its functional consequences remain poorly understood. ..."
+        },
+        {
+          "pmid": "40965863",
+          "title": "Predictive genomic medicine enlarges the spectrum of predisposing mutations for head and neck cancers via a panel of 56 genes selected for human neoplasia in Southern Italy: a pilot study.",
+          "authors": "Di Maggio Federica, Togo Giulia, Pavone Ettore et al.",
+          "journal": "Clinical chemistry and laboratory medicine",
+          "year": "2025",
+          "abstract": "Oral squamous cell carcinoma (OSCC) is the most prevalent form of squamous cell carcinomas of the head and neck (SCCHN), accounting for over 90 % of all oral cavity malignancies (approximately 275,000 new cases are worldwide diagnosed annually). Early-stage oral squamous cell carcinoma (T1 and T2) has a 5-year survival rate of up to 80 %. Survival rates decrease to 20-30 % at later stages (T3-T4). Each year, there are between 275,000 and 300,000 new cases of OSCC, and over 150,000 deaths worldwi..."
+        }
+      ]
+    }
+  }
+}
