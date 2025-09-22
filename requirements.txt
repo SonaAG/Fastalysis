@@ -1,0 +1,19 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+# Existing bioinformatics dependencies
+biopython==1.81
+requests==2.31.0
+plotly==5.17.0
+# Agent framework (choose one)
+autogen-agentchat==0.2.0  # Microsoft AutoGen
+# langgraph==0.0.40  # LangChain LangGraph alternative
+# RAG dependencies
+chromadb==0.4.18
+sentence-transformers==2.2.2
+# Chat models (if using local)
+transformers==4.36.0
+torch==2.1.0
+# Optional: n8n integration
+# n8n-python==0.1.0
