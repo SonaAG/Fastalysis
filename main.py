@@ -79,6 +79,7 @@ class FullPipelineRequest(BaseModel):
     num_blast_hits: int = 5
     max_variants: int = 20
     max_pubmed_results: int = 10
+    include_risk_assessment: bool = True  # Whether to include infection risk assessment
 
 class ChatRequest(BaseModel):
     message: str

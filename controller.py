@@ -195,9 +195,10 @@ def run_pubmed_controller(accession, additional_terms=None, max_results=10):
 def run_full_pipeline(fasta_path, ref_accession=None, variant_accession_or_gene=None, pubmed_accession=None, additional_pubmed_terms=None, num_blast_hits=5, max_variants=20, max_pubmed_results=10):
 	"""
 	Run all main Fastalysis features in sequence and return a dict with all results.
-	Any argument can be omitted if not needed.
+	Includes infection risk assessment and clinical recommendations.
 	"""
 	results = {}
+	from risk_assessment import calculate_infection_risk
 	# BLAST
 	if fasta_path:
 		results['blast'] = run_blast_controller(fasta_path, num_hits=num_blast_hits)
@@ -213,6 +214,42 @@ def run_full_pipeline(fasta_path, ref_accession=None, variant_accession_or_gene=
 	# PubMed
 	if pubmed_accession:
 		results['pubmed'] = run_pubmed_controller(pubmed_accession, additional_terms=additional_pubmed_terms, max_results=max_pubmed_results)
+	
+	# Generate risk assessment if we have sequence analysis results
+	if 'blast' in results and 'mutation_top1' in results:
+		results['risk_assessment'] = calculate_infection_risk(
+			blast_results=results['blast'],
+			mutation_results=results['mutation_top1'],
+			literature_data=results.get('pubmed')
+		)
+		
+		# Add a human-readable summary
+		risk_level = results['risk_assessment']['risk_level']
+		risk_score = results['risk_assessment']['risk_score']
+		confidence = results['risk_assessment']['confidence']
+		
+		summary = [
+			"🧬 Genomic Analysis Summary",
+			"------------------------",
+			f"Risk Level: {risk_level} ({risk_score}%)",
+			f"Confidence: {confidence}%",
+			"",
+			"Key Findings:",
+		]
+		
+		for factor in results['risk_assessment']['risk_factors']:
+			summary.append(f"• {factor}")
+		
+		summary.extend([
+			"",
+			"Recommendations:",
+		])
+		
+		for rec in results['risk_assessment']['recommendations']:
+			summary.append(f"• {rec}")
+			
+		results['summary'] = "\n".join(summary)
+	
 	return results
 
 # --- Expose all main functions for external use ---

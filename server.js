@@ -16,4 +16,4 @@ app.post('/chat', async (req, res) => {
   res.json({ response });
 });
 
-app.listen(8000, () => console.log('API running on port 8000'));
+app.listen(3000, () => console.log('Chat API running on port 3000'));

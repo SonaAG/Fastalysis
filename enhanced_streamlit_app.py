@@ -33,8 +33,100 @@ def init_session_state():
     if "current_sequence" not in st.session_state:
         st.session_state.current_sequence = ""
 
+def perform_sequence_analysis(sequence: str) -> Dict:
+    """Perform comprehensive sequence analysis using FastAPI backend"""
+    try:
+        # First run BLAST analysis
+        blast_response = requests.post(
+            "http://localhost:8000/blast",
+            json={"sequence": sequence, "num_hits": 5}
+        )
+        
+        # Get mutation analysis
+        mutation_response = requests.post(
+            "http://localhost:8000/mutation",
+            json={"sequence": sequence}
+        )
+        
+        # Combine results
+        results = {
+            "blast": blast_response.json() if blast_response.ok else {"status": "error"},
+            "mutation": mutation_response.json() if mutation_response.ok else {"status": "error"}
+        }
+        
+        # Format the results into a readable message
+        blast_hits = results["blast"].get("data", {}).get("hits", [])
+        mutations = results["mutation"].get("data", {}).get("mutations", [])
+        
+        response = "🧬 **Sequence Analysis Results**\n\n"
+        
+        # Add BLAST results
+        response += "**BLAST Results:**\n"
+        if blast_hits:
+            for i, hit in enumerate(blast_hits[:3], 1):
+                response += f"{i}. **{hit.get('title', 'Unknown Sequence')}**\n"
+                response += f"   - Identity: {hit.get('identity', 'N/A')}%\n"
+                response += f"   - E-value: {hit.get('evalue', 'N/A')}\n"
+                response += f"   - Accession: {hit.get('accession', 'N/A')}\n\n"
+        else:
+            response += "No significant BLAST hits found\n\n"
+        
+        # Add mutation results if available
+        if mutations:
+            response += "**Mutation Analysis:**\n"
+            for mut in mutations[:5]:
+                response += f"- Position {mut['position']}: {mut['reference']} → {mut['variant']}\n"
+            response += "\n"
+        
+        return {
+            "status": "success",
+            "response": response
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "response": f"Analysis failed: {str(e)}"
+        }
+
+def call_chat_api(message: str, model: str = "llama-3.1-8b-instant", sequence: str = None) -> Dict:
+    """Make API calls to Node.js chat backend or sequence analysis based on message"""
+    try:
+        # Check for analysis commands
+        if sequence and message in ["ANALYZE_SEQUENCE", "RUN_BLAST", "FIND_LITERATURE"]:
+            if message == "ANALYZE_SEQUENCE":
+                return perform_sequence_analysis(sequence)
+            elif message == "RUN_BLAST":
+                response = requests.post(
+                    "http://localhost:8000/blast",
+                    json={"sequence": sequence, "num_hits": 5}
+                )
+            elif message == "FIND_LITERATURE":
+                response = requests.post(
+                    "http://localhost:8000/pubmed",
+                    json={"sequence": sequence, "max_results": 10}
+                )
+                
+            if response.ok:
+                result = response.json()
+                return {
+                    "status": "success",
+                    "response": format_analysis_result(result, message)
+                }
+        
+        # Default to chat API for regular queries
+        response = requests.post(
+            "http://localhost:3000/chat",
+            json={"message": message, "model": model}
+        )
+        if response.ok:
+            return {"status": "success", "response": response.json().get("response", "")}
+        else:
+            return {"status": "error", "message": f"Chat API error: {response.status_code}"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 def call_api(endpoint: str, data: Dict) -> Dict:
-    """Make API calls to FastAPI backend"""
+    """Make API calls to FastAPI backend for non-chat endpoints"""
     try:
         response = requests.post(f"{API_BASE_URL}/{endpoint}", json=data)
         if response.ok:
@@ -246,19 +338,19 @@ def display_chat_interface():
     st.header("🤖 Genomics Research Assistant")
     
     # Get available models
-    try:
-        models_response = requests.get(f"{API_BASE_URL}/models")
-        if models_response.ok:
-            available_models = models_response.json()["models"]
-        else:
-            available_models = ["kimi-k2", "llama-3.1-8b-instant"]
-    except:
-        available_models = ["kimi-k2", "llama-3.1-8b-instant"]
+    # Define available Groq models
+    available_models = [
+        "llama-3.1-8b-instant",  # Default and reliable model
+        "llama-3.3-70b-versatile",
+        "deepseek-r1-distill-llama-70b",
+        "meta-llama/llama-4-scout-17b-16e-instruct"
+    ]
     
     # Model selection
     selected_model = st.selectbox(
         "Choose AI Model", 
         available_models,
+        index=0,  # Default to llama-3.1-8b-instant
         help="Select the AI model for conversations"
     )
     
@@ -269,67 +361,45 @@ def display_chat_interface():
     
     user_input = st.chat_input("Ask me about genomics, genes, mutations, or request analysis...")
     
-    # Quick action buttons
+    # Quick action buttons for sequence analysis
     if st.session_state.current_sequence:
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("🤖 Analyze my sequence", key="chat_analyze"):
-                user_input = f"Please analyze this sequence and identify what it is"
+            if st.button("� Analyze Sequence", key="chat_analyze", help="Run comprehensive analysis including BLAST search and mutation detection"):
+                st.session_state.messages.append({"role": "user", "content": "Analyzing sequence..."})
+                with st.spinner("🔬 Analyzing sequence..."):
+                    result = perform_sequence_analysis(st.session_state.current_sequence)
+                    if result["status"] == "success":
+                        st.session_state.messages.append({"role": "assistant", "content": result["response"]})
+                    else:
+                        st.error(result["response"])
+                st.rerun()
+                
         with col2:
-            if st.button("🔍 BLAST search", key="chat_blast"):
-                user_input = f"Run a BLAST search on this sequence to find similar sequences"
+            if st.button("🔍 BLAST Search", key="chat_blast", help="Search NCBI database for similar sequences"):
+                user_input = "RUN_BLAST"
+                
         with col3:
-            if st.button("📚 Find literature", key="chat_literature"):
-                user_input = "Find relevant literature for this sequence and explain its significance"
+            if st.button("📚 Find Literature", key="chat_literature", help="Search for relevant research papers"):
+                user_input = "FIND_LITERATURE"
     
     if user_input:
         # Add user message
         st.session_state.messages.append({"role": "user", "content": user_input})
         
-        # Prepare context
-        context = {}
-        if st.session_state.current_sequence:
-            context["sequence"] = st.session_state.current_sequence
-        if st.session_state.analysis_results:
-            context["previous_results"] = st.session_state.analysis_results
+        # Get current sequence if available
+        sequence = st.session_state.current_sequence if "current_sequence" in st.session_state else None
         
-        # Call chat API with context
-        chat_request = {
-            "message": user_input,
-            "model": selected_model,
-            "context": context
-        }
-        
+        # Call Node.js chat API
         with st.spinner("🧠 AI is thinking..."):
-            response = call_api("chat", chat_request)
+            response = call_chat_api(user_input, selected_model)
         
         if response["status"] == "success":
-            chat_response = response["response"]
-            
-            # Handle different response types
-            if isinstance(chat_response, dict):
-                if "message" in chat_response:
-                    st.session_state.messages.append({
-                        "role": "assistant", 
-                        "content": chat_response["message"]
-                    })
-                    
-                    # If analysis was performed, also store the results
-                    if chat_response.get("status") == "analysis_complete" and "analysis_data" in chat_response:
-                        # Merge new analysis results
-                        for analysis_type, data in chat_response["analysis_data"].items():
-                            st.session_state.analysis_results[analysis_type] = {"status": "success", "data": data}
-                        st.rerun()  # Refresh to show new results
-                else:
-                    st.session_state.messages.append({
-                        "role": "assistant", 
-                        "content": str(chat_response)
-                    })
-            else:
-                st.session_state.messages.append({
-                    "role": "assistant", 
-                    "content": str(chat_response)
-                })
+            # Add AI response to chat
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": response["response"]
+            })
         else:
             st.error(f"Chat error: {response.get('message', 'Unknown error')}")
     
@@ -599,9 +669,33 @@ def display_blast_results(data: Dict):
         st.info("Try with a different sequence or check if the sequence is valid")
 
 def display_mutation_results(data: Dict):
-    """Display mutation analysis results with rich visualizations and downloads"""
+    """Display mutation analysis results with risk assessment and rich visualizations"""
     if "mutations" in data:
-        # Header with reference information
+        mutations = data.get("mutations", [])
+        num_mutations = len(mutations)
+        
+        # Risk Assessment Section
+        st.subheader("🎯 Mutation Risk Assessment")
+        col1, col2, col3 = st.columns(3)
+        
+        # Calculate risk metrics
+        mutation_risk = min((num_mutations / 10) * 100, 100)  # Scale based on mutation count
+        critical_positions = [10, 20, 30, 40, 50]  # Same as in risk_assessment.py
+        critical_mutations = [m for m in mutations if m.get("position", 0) in critical_positions]
+        critical_risk = min((len(critical_mutations) / len(critical_positions)) * 100, 100)
+        
+        # Display risk metrics
+        with col1:
+            st.metric("Total Mutations", num_mutations)
+        with col2:
+            st.metric("Mutation Risk Score", f"{mutation_risk:.1f}%")
+        with col3:
+            # Calculate overall risk level
+            risk_level = "High" if mutation_risk > 70 else "Moderate" if mutation_risk > 40 else "Low"
+            risk_icon = "🚨" if risk_level == "High" else "⚠️" if risk_level == "Moderate" else "✅"
+            st.metric(f"{risk_icon} Risk Level", risk_level, f"{max(mutation_risk, critical_risk):.0f}%")
+        
+        # Main mutation analysis dashboard
         st.subheader("🧬 Mutation Analysis Dashboard")
         
         # Reference sequence information
