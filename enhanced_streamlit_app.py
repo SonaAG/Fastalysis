@@ -9,9 +9,12 @@ import json
 from typing import Dict, Optional
 import plotly.express as px
 import pandas as pd
-from Bio import Entrez
+from Bio import Entrez, SeqIO
+from Bio.Blast import NCBIWWW, NCBIXML
 from xml.etree import ElementTree as ET
 from tabulate import tabulate
+# Import functions for sequence analysis
+from app import detect_sequence_type, run_blast_top_hits
 
 # Configuration
 API_BASE_URL = "http://localhost:8000"
@@ -271,6 +274,57 @@ def fetch_pubmed_details(pmids):
         
         papers = []
         
+        # Ensure we return dictionaries with consistent keys
+        for i, record in enumerate(records.get("PubmedArticle", [])):
+            try:
+                article = record.get("MedlineCitation", {}).get("Article", {})
+                
+                # Extract title
+                title = article.get("ArticleTitle", "Untitled")
+                
+                # Extract authors
+                author_list = article.get("AuthorList", [])
+                authors = []
+                for author in author_list:
+                    if "LastName" in author and "ForeName" in author:
+                        authors.append(f"{author['LastName']} {author['ForeName'][0]}")
+                authors_str = ", ".join(authors) if authors else "Unknown"
+                
+                # Extract journal and year
+                journal_info = article.get("Journal", {})
+                journal_name = journal_info.get("Title", "Unknown Journal")
+                
+                pub_date = None
+                if "PubDate" in journal_info.get("JournalIssue", {}):
+                    pub_date = journal_info["JournalIssue"]["PubDate"]
+                    
+                year = pub_date.get("Year", "") if pub_date else ""
+                
+                # Extract abstract
+                abstract_text = ""
+                if "Abstract" in article and "AbstractText" in article["Abstract"]:
+                    abstract_text = " ".join([str(text) for text in article["Abstract"]["AbstractText"]])
+                
+                papers.append({
+                    "pmid": pmids[i],
+                    "title": title,
+                    "authors": authors_str,
+                    "journal": journal_name,
+                    "year": year,
+                    "abstract": abstract_text
+                })
+            except Exception as e:
+                # If parsing a specific record fails, add a placeholder
+                papers.append({
+                    "pmid": pmids[i] if i < len(pmids) else "Unknown",
+                    "title": "Error parsing publication details",
+                    "authors": "Unknown",
+                    "journal": "Unknown",
+                    "year": "",
+                    "abstract": ""
+                })
+                continue
+        
         # Parse XML records
         for record in records['PubmedArticle']:
             try:
@@ -366,8 +420,35 @@ def display_chat_interface():
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("� Analyze Sequence", key="chat_analyze", help="Run comprehensive analysis including BLAST search and mutation detection"):
-                st.session_state.messages.append({"role": "user", "content": "Analyzing sequence..."})
                 with st.spinner("🔬 Analyzing sequence..."):
+                    try:
+                        seq = st.session_state.current_sequence
+                        
+                        # Create a user-friendly analysis summary
+                        analysis_summary = "📊 **Sequence Analysis Summary**\n\n"
+                        
+                        # Basic sequence stats
+                        length = len(seq)
+                        gc_content = (seq.upper().count('G') + seq.upper().count('C')) / length * 100
+                        
+                        analysis_summary += f"I analyzed your sequence of {length} nucleotides.\n\n"
+                        analysis_summary += f"**Key characteristics:**\n"
+                        analysis_summary += f"• Length: {length} nucleotides\n"
+                        analysis_summary += f"• GC content: {gc_content:.1f}%\n"
+                        
+                        # Add a note about what was found
+                        if gc_content > 60:
+                            analysis_summary += f"\nThe high GC content ({gc_content:.1f}%) suggests this sequence may come from a GC-rich organism or region.\n"
+                        elif gc_content < 35:
+                            analysis_summary += f"\nThe low GC content ({gc_content:.1f}%) suggests this sequence may come from an AT-rich organism or region.\n"
+                        
+                        analysis_summary += "\nTo learn more about this sequence, try using the BLAST Search button to find similar sequences, or ask me specific questions about genes, mutations, or other features you're interested in."
+                        
+                        # Add results to chat
+                        st.session_state.messages.append({"role": "assistant", "content": analysis_summary})
+                    except Exception as e:
+                        error_message = f"❌ Error during sequence analysis: {str(e)}"
+                        st.session_state.messages.append({"role": "assistant", "content": error_message})
                     result = perform_sequence_analysis(st.session_state.current_sequence)
                     if result["status"] == "success":
                         st.session_state.messages.append({"role": "assistant", "content": result["response"]})
@@ -377,11 +458,181 @@ def display_chat_interface():
                 
         with col2:
             if st.button("🔍 BLAST Search", key="chat_blast", help="Search NCBI database for similar sequences"):
-                user_input = "RUN_BLAST"
+                with st.spinner("Running BLAST search against NCBI database..."):
+                    try:
+                        # Get the sequence
+                        seq = st.session_state.current_sequence
+                        
+                        # Define local detect_sequence_type function
+                        def local_detect_sequence_type(seq):
+                            protein_set = set("ACDEFGHIKLMNPQRSTVWY")
+                            nucleotide_set = set("ACGTU")
+                            seq_set = set(seq.upper())
+                            if seq_set.issubset(nucleotide_set) or len(seq_set & nucleotide_set) / len(seq_set) > 0.95:
+                                return "nucleotide"
+                            elif seq_set.issubset(protein_set):
+                                return "protein"
+                            else:
+                                return "nucleotide"  # Default to nucleotide
+                        
+                        # Determine sequence type
+                        seq_type = local_detect_sequence_type(seq)
+                        
+                        # Run BLAST search
+                        program = "blastn" if seq_type == "nucleotide" else "blastp"
+                        db = "nt" if seq_type == "nucleotide" else "nr"
+                        
+                        result_handle = NCBIWWW.qblast(program, db, seq, hitlist_size=5)
+                        blast_record = NCBIXML.read(result_handle)
+                        
+                        # Format results in a human-friendly way
+                        blast_summary = "🧬 **BLAST Search Results:**\n\n"
+                        if blast_record.alignments:
+                            # Extract organism/virus name from first hit
+                            first_hit_title = blast_record.alignments[0].title
+                            organism_name = ""
+                            
+                            # Try to extract a clean organism name
+                            import re
+                            match = re.search(r'\[(.*?)\]', first_hit_title)
+                            if match:
+                                organism_name = match.group(1)
+                            else:
+                                # Alternative approach - get the most relevant part
+                                parts = first_hit_title.split('|')
+                                if len(parts) >= 3:
+                                    organism_name = parts[-1].split(',')[0].strip()
+                                else:
+                                    words = first_hit_title.split()
+                                    if len(words) >= 3:
+                                        organism_name = ' '.join(words[1:4])
+                            
+                            # Get the top match identity
+                            top_identity = (blast_record.alignments[0].hsps[0].identities / 
+                                           blast_record.alignments[0].hsps[0].align_length) * 100
+                                
+                            # Human-friendly summary
+                            if top_identity > 95:
+                                match_quality = "very strong"
+                            elif top_identity > 85:
+                                match_quality = "strong"
+                            elif top_identity > 70:
+                                match_quality = "moderate"
+                            else:
+                                match_quality = "weak"
+                            
+                            # Create a conversational response
+                            if "virus" in first_hit_title.lower() or "viral" in first_hit_title.lower():
+                                blast_summary += f"I found a **{match_quality} match** ({top_identity:.1f}%) to sequences from the **{organism_name or 'virus'}**.\n\n"
+                                
+                                if top_identity > 90:
+                                    blast_summary += f"This suggests your sequence is very likely from this virus or a closely related strain. "
+                                    blast_summary += f"The extremely high similarity ({top_identity:.1f}%) indicates this is almost certainly the correct identification.\n\n"
+                                elif top_identity > 80:
+                                    blast_summary += f"This suggests your sequence is probably from this virus or a related strain. "
+                                    blast_summary += f"The high similarity ({top_identity:.1f}%) makes this a reliable match.\n\n"
+                                else:
+                                    blast_summary += f"There is some similarity to this virus, but the match is not definitive. "
+                                    blast_summary += f"The moderate similarity ({top_identity:.1f}%) suggests a possible relationship.\n\n"
+                            else:
+                                blast_summary += f"I found a **{match_quality} match** ({top_identity:.1f}%) to sequences from **{organism_name or 'the organism'}**.\n\n"
+                            
+                            # Add secondary matches if they exist and are different
+                            if len(blast_record.alignments) > 1:
+                                other_organisms = set()
+                                for alignment in blast_record.alignments[1:3]:  # Just check next 2
+                                    match = re.search(r'\[(.*?)\]', alignment.title)
+                                    if match and match.group(1) not in other_organisms:
+                                        other_organisms.add(match.group(1))
+                                
+                                if other_organisms:
+                                    blast_summary += "Other similar sequences were found in:\n"
+                                    for org in other_organisms:
+                                        blast_summary += f"• {org}\n"
+                            
+                            # Add implications
+                            blast_summary += "\n**What this means:**\n"
+                            if "dengue" in first_hit_title.lower() or "dengue" in organism_name.lower():
+                                blast_summary += "This sequence appears to be from Dengue virus, which causes dengue fever. "
+                                blast_summary += "Dengue is a mosquito-borne viral disease that has rapidly spread in all regions in recent years."
+                            elif "coronavirus" in first_hit_title.lower() or "sars" in first_hit_title.lower():
+                                blast_summary += "This sequence appears to be from a coronavirus. Further analysis would be needed to determine the exact strain and potential implications."
+                            else:
+                                blast_summary += "This sequence has significant similarity to known genomic sequences. Further analysis is recommended to understand its biological significance."
+                        else:
+                            blast_summary += "❌ I couldn't find any significant matches for this sequence in the NCBI database. This might indicate a novel sequence or potential sequencing errors."
+                        
+                        # Add results to chat
+                        st.session_state.messages.append({"role": "assistant", "content": blast_summary})
+                    except Exception as e:
+                        error_message = f"❌ Error during BLAST search: {str(e)}"
+                        st.session_state.messages.append({"role": "assistant", "content": error_message})
                 
         with col3:
             if st.button("📚 Find Literature", key="chat_literature", help="Search for relevant research papers"):
-                user_input = "FIND_LITERATURE"
+                with st.spinner("Searching scientific literature..."):
+                    try:
+                        # Get the sequence
+                        seq = st.session_state.current_sequence
+                        
+                        # Try to determine what to search for
+                        search_term = None
+                        
+                        # If we have BLAST results with high identity, use those
+                        if "blast_results" in st.session_state and st.session_state.get("blast_results"):
+                            for hit in st.session_state.blast_results:
+                                if hit.get("percent_identity", 0) > 90:
+                                    # Extract search term from hit title
+                                    title = hit.get("title", "")
+                                    import re
+                                    match = re.search(r'\[(.*?)\]', title)
+                                    if match:
+                                        search_term = match.group(1)
+                                    else:
+                                        words = title.split()
+                                        if len(words) > 2:
+                                            search_term = " ".join(words[1:3])
+                                    break
+                        
+                        if not search_term:
+                            # Try DNA analysis
+                            if len(seq) > 500:
+                                search_term = "genomic sequence analysis"
+                            else:
+                                search_term = "DNA sequence analysis"
+                        
+                        # Search PubMed using our existing function
+                        pmids = search_pubmed(search_term, max_results=5)
+                        
+                        # Format results in a conversational style
+                        lit_summary = f"📚 **Literature Search Results for '{search_term}'**\n\n"
+                        
+                        if pmids:
+                            # Fetch paper details
+                            paper_details = fetch_pubmed_details(pmids)
+                            lit_summary += "I found these relevant scientific publications:\n\n"
+                            
+                            for i, paper in enumerate(paper_details, 1):
+                                title = paper.get("title", "Untitled")
+                                authors = paper.get("authors", "Unknown")
+                                if isinstance(authors, str) and len(authors) > 50:
+                                    authors = authors[:50] + "..."
+                                journal = paper.get("journal", "")
+                                year = paper.get("year", "")
+                                
+                                lit_summary += f"**{i}. {title}**\n"
+                                lit_summary += f"   Authors: {authors}\n"
+                                lit_summary += f"   Published in: {journal} ({year})\n\n"
+                                
+                            lit_summary += "These papers might provide scientific context for your sequence. Would you like me to summarize any of these papers in more detail?"
+                        else:
+                            lit_summary += "I couldn't find any scientific publications directly related to your sequence. Try modifying your search terms or ask me to search for a specific topic."
+                        
+                        # Add to chat
+                        st.session_state.messages.append({"role": "assistant", "content": lit_summary})
+                    except Exception as e:
+                        error_message = f"❌ Error searching literature: {str(e)}"
+                        st.session_state.messages.append({"role": "assistant", "content": error_message})
     
     if user_input:
         # Add user message
