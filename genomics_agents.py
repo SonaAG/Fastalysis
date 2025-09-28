@@ -6,6 +6,7 @@ Multi-agent coordination for intelligent bioinformatics analysis
 from typing import Dict, List, Optional, Any
 import json
 import asyncio
+import os
 from datetime import datetime
 
 # AutoGen imports
@@ -24,11 +25,28 @@ from controller import (
 
 class GenomicsAgentSystem:
     def __init__(self, chat_model_config: Dict):
-        self.llm_config = chat_model_config
+        # Import our custom Groq compatibility module if needed
+        try:
+            from groq_compat import create_groq_config
+            # If config looks like a placeholder, recreate it with Groq compatibility
+            if (not chat_model_config.get("config_list") or 
+                chat_model_config["config_list"][0].get("api_key") == "placeholder"):
+                self.llm_config = create_groq_config()
+            else:
+                self.llm_config = chat_model_config
+        except ImportError:
+            # Fall back to provided config
+            self.llm_config = chat_model_config
+            
+        # Initialize agents
         self.setup_agents()
         
     def setup_agents(self):
         """Initialize all specialized agents"""
+        # Check if we have a valid config
+        if (not self.llm_config or not self.llm_config.get("config_list") or 
+            not self.llm_config["config_list"][0].get("api_key")):
+            raise ValueError("Missing valid LLM configuration with API key")
         
         # 1. Chat Coordinator Agent - Main interface
         self.coordinator = AssistantAgent(
@@ -91,37 +109,80 @@ class GenomicsAgentSystem:
         )
         
     async def process_query(self, user_query: str, sequence_data: Optional[str] = None) -> Dict:
-        """Main entry point for processing user queries"""
+        """Main entry point for processing user queries with robust error handling"""
         
-        # Create group chat for agent coordination
-        groupchat = GroupChat(
-            agents=[self.coordinator, self.analyzer, self.literature_agent, self.user_proxy],
-            messages=[],
-            max_round=10
-        )
-        manager = GroupChatManager(groupchat=groupchat, llm_config=self.llm_config)
+        try:
+            # Try to import our rate limiting utility
+            try:
+                from app.api_utils import with_rate_limit
+                use_rate_limiting = True
+            except ImportError:
+                use_rate_limiting = False
+            
+            # Create group chat for agent coordination
+            groupchat = GroupChat(
+                agents=[self.coordinator, self.analyzer, self.literature_agent, self.user_proxy],
+                messages=[],
+                max_round=10
+            )
+            manager = GroupChatManager(groupchat=groupchat, llm_config=self.llm_config)
+            
+            # Enhanced prompt with context
+            enhanced_query = f"""
+            User Query: {user_query}
+            Sequence Data: {sequence_data if sequence_data else 'None provided'}
+            
+            Please coordinate to provide a comprehensive response including:
+            1. Understanding of the user's request
+            2. Appropriate bioinformatics analysis if needed  
+            3. Literature context and background
+            4. Clear, researcher-friendly explanation
+            """
+            
+            # Start the conversation with rate limiting if available
+            if use_rate_limiting:
+                response = with_rate_limit(
+                    self.user_proxy.initiate_chat,
+                    manager, 
+                    message=enhanced_query
+                )
+            else:
+                response = self.user_proxy.initiate_chat(manager, message=enhanced_query)
+            
+            return {
+                "status": "success",
+                "timestamp": datetime.now().isoformat(),
+                "query": user_query,
+                "response": response,
+                "agents_involved": ["coordinator", "analyzer", "literature_agent"]
+            }
         
-        # Enhanced prompt with context
-        enhanced_query = f"""
-        User Query: {user_query}
-        Sequence Data: {sequence_data if sequence_data else 'None provided'}
-        
-        Please coordinate to provide a comprehensive response including:
-        1. Understanding of the user's request
-        2. Appropriate bioinformatics analysis if needed  
-        3. Literature context and background
-        4. Clear, researcher-friendly explanation
-        """
-        
-        # Start the conversation
-        response = self.user_proxy.initiate_chat(manager, message=enhanced_query)
-        
-        return {
-            "timestamp": datetime.now().isoformat(),
-            "query": user_query,
-            "response": response,
-            "agents_involved": ["coordinator", "analyzer", "literature_agent"]
-        }
+        except Exception as e:
+            # Detailed error reporting
+            error_msg = str(e)
+            error_type = type(e).__name__
+            
+            # Check if this is a rate limit error
+            is_rate_limit = False
+            if '429' in error_msg or 'rate limit' in error_msg.lower() or 'too many requests' in error_msg.lower():
+                is_rate_limit = True
+                
+            # Prepare user-friendly error message
+            if is_rate_limit:
+                friendly_msg = ("The AI service is currently experiencing high demand. "
+                              "Please wait a minute and try again.")
+            else:
+                friendly_msg = "There was an issue processing your request with the AI assistants."
+            
+            return {
+                "status": "error",
+                "error_type": error_type,
+                "error": error_msg,
+                "user_message": friendly_msg,
+                "timestamp": datetime.now().isoformat(),
+                "query": user_query,
+                "retry_suggested": is_rate_limit
+            }
 
     def register_bioinformatics_functions(self):
         """Register your controller functions with agents"""
@@ -170,18 +231,38 @@ class GenomicsAgentSystem:
 def create_genomics_agent_system():
     """Factory function to create the agent system"""
     
-    # Configure your LLM - adapt to your models from chat.py
-    llm_config = {
-        "config_list": [
-            {
-                "model": "kimi-k2",  # or your preferred model
-                "api_key": "your-api-key",  # if needed
-                "api_base": "http://localhost:8000",  # your local API
+    # Use our custom Groq compatibility module if available
+    try:
+        from groq_compat import create_groq_config
+        llm_config = create_groq_config("llama-3.1-8b-instant")
+        
+        # Check if config is empty (no API key found)
+        if not llm_config:
+            # Fall back to default config
+            llm_config = {
+                "config_list": [
+                    {
+                        "model": "llama-3.1-8b-instant", 
+                        "api_key": os.environ.get("GROQ_API_KEY", "missing-key"),
+                        "base_url": "https://api.groq.com/openai/v1",
+                    }
+                ],
+                "temperature": 0.7,
+                "timeout": 120,
             }
-        ],
-        "temperature": 0.7,
-        "timeout": 120,
-    }
+    except ImportError:
+        # Fall back to default config
+        llm_config = {
+            "config_list": [
+                {
+                    "model": "llama-3.1-8b-instant",
+                    "api_key": os.environ.get("GROQ_API_KEY", "missing-key"),
+                    "base_url": "https://api.groq.com/openai/v1",
+                }
+            ],
+            "temperature": 0.7,
+            "timeout": 120,
+        }
     
     agent_system = GenomicsAgentSystem(llm_config)
     agent_system.register_bioinformatics_functions()

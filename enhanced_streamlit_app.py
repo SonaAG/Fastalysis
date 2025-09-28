@@ -3,22 +3,344 @@ Enhanced Streamlit Frontend for Genomics Research Assistant
 Integrates with FastAPI backend and agent system
 """
 
+# First load environment variables from .env.local
+from env_loader import load_env_file, ensure_api_keys
+print("Loading environment variables...")
+loaded_env = load_env_file(".env.local")
+print(f"Loaded {len(loaded_env)} environment variables")
+
+# Now check if the API key is available
+api_keys_available = ensure_api_keys()
+if api_keys_available:
+    print("Required API keys found!")
+    print(f"GROQ_API_KEY present: {'GROQ_API_KEY' in loaded_env}")
+else:
+    print("WARNING: Required API keys are missing!")
+    print("Please create a .env.local file with your API keys")
+    print("Copy .env.local.template to .env.local and add your keys")
+    print("Or use the Debug Tools in the sidebar to troubleshoot")
+    
+# Import debug tools
+try:
+    from app.debug_tools import display_debug_info, display_enhanced_debug_tools
+except ImportError:
+    # Define fallback functions if import fails
+    def display_debug_info():
+        if st.session_state.get('show_debug', False):
+            st.sidebar.error("Debug tools module not found")
+            
+    def display_enhanced_debug_tools():
+        if st.session_state.get('show_enhanced_debug', False):
+            with st.sidebar.expander("🔍 Advanced Debug Tools"):
+                st.subheader("RAG System")
+                
+                if st.button("Test RAG System"):
+                    if rag_system is not None:
+                        with st.spinner("Testing RAG system..."):
+                            try:
+                                test_result = rag_system.get_gene_context("CFTR")
+                                st.text_area("Results", test_result, height=200)
+                                if "Error" not in test_result:
+                                    st.success("RAG system working correctly")
+                                else:
+                                    st.warning("RAG system returned an error")
+                            except Exception as e:
+                                st.error(f"RAG system test failed: {str(e)}")
+                    else:
+                        st.error("RAG system not initialized")
+                
+                if st.button("Reload Knowledge Base"):
+                    if rag_system is not None:
+                        with st.spinner("Reloading knowledge base..."):
+                            try:
+                                success = rag_system.reload_knowledge_base()
+                                if success:
+                                    st.success("Knowledge base reloaded successfully")
+                                else:
+                                    st.error("Failed to reload knowledge base")
+                            except Exception as e:
+                                st.error(f"Error reloading knowledge base: {str(e)}")
+                    else:
+                        st.error("RAG system not initialized")
+                
+                st.subheader("Collection Status")
+                if rag_system is not None:
+                    try:
+                        collections = {
+                            "genes_collection": rag_system.genes_collection.count(),
+                            "diseases_collection": rag_system.diseases_collection.count(),
+                            "mutations_collection": rag_system.mutations_collection.count(),
+                            "literature_collection": rag_system.literature_collection.count()
+                        }
+                        for name, count in collections.items():
+                            st.text(f"{name}: {count} items")
+                    except Exception as e:
+                        st.error(f"Error accessing collections: {str(e)}")
+                else:
+                    st.error("RAG system not initialized")
+
 import streamlit as st
 import requests
 import json
-from typing import Dict, Optional
+import asyncio
+import threading
+import random
+import time
+from datetime import datetime, timedelta
+import os
+import socket
+import time
+from pathlib import Path
+from typing import Dict, Optional, List, Any
 import plotly.express as px
 import pandas as pd
 from Bio import Entrez, SeqIO
 from Bio.Blast import NCBIWWW, NCBIXML
 from xml.etree import ElementTree as ET
 from tabulate import tabulate
+import plotly.express as px
+import plotly.graph_objects as go
 # Import functions for sequence analysis
 from app import detect_sequence_type, run_blast_top_hits
+from risk_assessment import InfectionRiskAssessment
+from display_risk_assessment import display_risk_assessment, display_mini_risk_assessment
+
+# Import RAG and Agent systems - with fallbacks if imports fail
+try:
+    from genomics_rag import GenomicsRAG
+    from genomics_agents import GenomicsAgentSystem
+    from rag_agent_helper import use_rag_system_with_chat, use_agent_system_with_chat
+    AGENT_IMPORTS_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Advanced AI features unavailable - {str(e)}")
+    # Create dummy classes/functions to avoid errors
+    class GenomicsRAG:
+        def __init__(self, *args, **kwargs):
+            pass
+        def initialize_knowledge_base(self):
+            pass
+        def query_knowledge(self, *args, **kwargs):
+            return {"results": []}
+        def get_mutation_context(self, *args, **kwargs):
+            return ""
+    
+    class GenomicsAgentSystem:
+        def __init__(self, *args, **kwargs):
+            pass
+        def register_bioinformatics_functions(self):
+            pass
+    
+    def use_rag_system_with_chat(message, sequence, rag_system):
+        return {"message": message, "context": ""}
+    
+    def use_agent_system_with_chat(message, sequence, agent_system):
+        return {"status": "error", "response": "Agent system not available"}
+    
+    AGENT_IMPORTS_AVAILABLE = False
 
 # Configuration
 API_BASE_URL = "http://localhost:8000"
 Entrez.email = "your.email@example.com"  # Replace with your real email
+
+# Initialize RAG and Agent systems
+rag_system = None
+agent_system = None
+
+def initialize_ai_systems():
+    """Initialize RAG and Agent systems if not already initialized"""
+    global rag_system, agent_system
+    
+    # Check if imports are available
+    if not AGENT_IMPORTS_AVAILABLE:
+        st.warning("Advanced AI features unavailable due to missing dependencies.")
+        return
+    
+    # Initialize RAG system
+    try:
+        if rag_system is None:
+            with st.spinner("Initializing knowledge base..."):
+                # Initialize RAG system with timeout protection
+                try:
+                    print("Creating GenomicsRAG instance...")
+                    
+                    # First, check if we have a working database path
+                    import os
+                    import glob
+                    
+                    # Try to find the most recent genomics_db directory
+                    db_dirs = glob.glob("./genomics_db*")
+                    if not db_dirs:
+                        print("No genomics_db directories found, using default")
+                        db_path = "./genomics_db"
+                    else:
+                        # Sort by modification time, newest first
+                        db_dirs.sort(key=os.path.getmtime, reverse=True)
+                        db_path = db_dirs[0]
+                        print(f"Using most recent database: {db_path}")
+                    
+                    # Initialize with a 30-second timeout
+                    import threading
+                    import time
+                    
+                    initialization_complete = False
+                    temp_rag_system = None
+                    
+                    def initialize_rag():
+                        nonlocal initialization_complete, temp_rag_system
+                        try:
+                            # Try to initialize the RAG system
+                            temp_rag = GenomicsRAG(db_path=db_path)
+                            # Set flag to indicate initialization is done
+                            temp_rag_system = temp_rag
+                            initialization_complete = True
+                        except Exception as e:
+                            print(f"Error in initialization thread: {str(e)}")
+                            initialization_complete = True  # Mark as complete even if it failed
+                    
+                    # Start initialization in separate thread
+                    init_thread = threading.Thread(target=initialize_rag)
+                    init_thread.daemon = True
+                    init_thread.start()
+                    
+                    # Wait for initialization with timeout
+                    timeout_seconds = 30
+                    start_time = time.time()
+                    
+                    while not initialization_complete and (time.time() - start_time) < timeout_seconds:
+                        time.sleep(0.5)
+                        # Show progress
+                        if (int(time.time() - start_time) % 5) == 0:
+                            print(f"Waiting for RAG initialization... ({int(time.time() - start_time)}s)")
+                    
+                    if not initialization_complete:
+                        print(f"RAG initialization timed out after {timeout_seconds} seconds")
+                        raise TimeoutError(f"RAG initialization timed out after {timeout_seconds} seconds")
+                    
+                    if temp_rag_system is None:
+                        raise Exception("RAG initialization failed")
+                        
+                    # Now assign to the global variable
+                    rag_system = temp_rag_system
+                        
+                    print("RAG system initialized, now initializing knowledge base...")
+                    
+                    # Initialize knowledge base with timeout protection
+                    initialization_complete = False
+                    
+                    def init_knowledge():
+                        nonlocal initialization_complete
+                        try:
+                            rag_system.initialize_knowledge_base()
+                            initialization_complete = True
+                        except Exception as e:
+                            print(f"Error initializing knowledge base: {str(e)}")
+                            initialization_complete = True  # Mark as complete even if it failed
+                    
+                    # Start knowledge base initialization in separate thread
+                    init_thread = threading.Thread(target=init_knowledge)
+                    init_thread.daemon = True
+                    init_thread.start()
+                    
+                    # Wait for knowledge base initialization with timeout
+                    start_time = time.time()
+                    
+                    while not initialization_complete and (time.time() - start_time) < timeout_seconds:
+                        time.sleep(0.5)
+                        # Show progress
+                        if (int(time.time() - start_time) % 5) == 0:
+                            print(f"Waiting for knowledge base initialization... ({int(time.time() - start_time)}s)")
+                    
+                    if not initialization_complete:
+                        print(f"Knowledge base initialization timed out after {timeout_seconds} seconds")
+                        # Continue anyway, might have partial functionality
+                    
+                    # Test RAG system by querying for a known gene
+                    try:
+                        test_result = rag_system.get_gene_context("CFTR")
+                        if test_result and "Error" not in test_result:
+                            print("RAG system initialized and tested successfully")
+                        else:
+                            print("RAG system initialized but test query failed")
+                    except Exception as e:
+                        print(f"Test query failed: {str(e)}")
+                        
+                except Exception as inner_e:
+                    import traceback
+                    print(f"Error initializing RAG system: {str(inner_e)}")
+                    print(traceback.format_exc())
+                    st.error(f"Failed to initialize knowledge base: {str(inner_e)}")
+                    # Create a minimal RAG system for fallback - with simple functionality
+                    try:
+                        print("Creating minimal fallback RAG system...")
+                        
+                        # Create a minimal class to handle RAG functionality
+                        class MinimalRAG:
+                            def get_gene_context(self, gene):
+                                return f"Gene information for {gene} is not available (RAG system is in minimal mode)"
+                                
+                            def get_mutation_context(self, mutation):
+                                return f"Mutation information for {mutation} is not available (RAG system is in minimal mode)"
+                        
+                        rag_system = MinimalRAG()
+                        print("Minimal RAG system created")
+                    except:
+                        rag_system = None
+    except Exception as e:
+        import traceback
+        print(f"Error in RAG initialization outer block: {str(e)}")
+        print(traceback.format_exc())
+        st.warning(f"Warning: Knowledge base initialization issue: {str(e)}")
+        rag_system = None
+        # We'll continue without RAG if there's an error
+    
+    # Try to initialize agent system
+    try:
+        if agent_system is None:
+            with st.spinner("Setting up AI assistants..."):
+                # Check for AutoGen dependencies
+                try:
+                    # Verify autogen import
+                    from autogen import AssistantAgent
+                except ImportError:
+                    st.warning("Warning: AutoGen not available. Agent system will be disabled.")
+                    return
+                
+                # Use our custom Groq compatibility module
+                from groq_compat import create_groq_config, verify_groq_api_key
+                
+                # First check if API key is available and valid
+                if verify_groq_api_key():
+                    # Create a configuration using the helper function
+                    llm_config = create_groq_config("llama-3.1-8b-instant")
+                    
+                    # Show message to user
+                    if llm_config:
+                        st.info("Using Groq API as the backend for AI assistants")
+                    else:
+                        st.warning("Issue creating Groq config - agent system may not work")
+                        llm_config = None
+                else:
+                    st.warning("Groq API key not found or invalid - agent system disabled")
+                    # Set to None to skip initialization
+                    llm_config = None
+                
+                # Check if we have a valid llm_config with proper API key
+                if not llm_config or not llm_config.get("config_list") or not llm_config["config_list"][0].get("api_key"):
+                    st.warning("Cannot initialize agent system - missing API key configuration")
+                    agent_system = None
+                else:
+                    # Create and initialize the agent system
+                    try:
+                        # Pass the selected model to the agent system
+                        agent_system = GenomicsAgentSystem(llm_config)
+                        agent_system.register_bioinformatics_functions()
+                        st.success("Agent system initialized successfully")
+                    except Exception as e:
+                        st.warning(f"Agent system initialization warning: {str(e)}")
+                        agent_system = None
+    except Exception as e:
+        st.warning(f"Warning: Agent system initialization failed: {str(e)}")
+        # Continue without agent system
 
 st.set_page_config(
     page_title="🧬 Genomics Research Assistant",
@@ -35,6 +357,68 @@ def init_session_state():
         st.session_state.analysis_results = {}
     if "current_sequence" not in st.session_state:
         st.session_state.current_sequence = ""
+    if "rag_initialized" not in st.session_state:
+        st.session_state.rag_initialized = False
+    if "blast_results" not in st.session_state:
+        st.session_state.blast_results = []
+    if "show_debug" not in st.session_state:
+        st.session_state.show_debug = False
+    if "show_enhanced_debug" not in st.session_state:
+        st.session_state.show_enhanced_debug = False
+    if "rate_limit_errors" not in st.session_state:
+        st.session_state.rate_limit_errors = {}  # Track rate limit errors by model
+    if "api_calls" not in st.session_state:
+        st.session_state.api_calls = []  # Track recent API calls for throttling
+    if "show_detailed_risk" not in st.session_state:
+        st.session_state.show_detailed_risk = False
+
+
+def debug_environment():
+    """Debug function to check environment variables and configuration"""
+    # Show environment variables status
+    st.subheader("🔧 Environment Variables")
+    
+    # Check .env.local file
+    env_file = Path(".env.local")
+    if env_file.exists():
+        st.success(f"✅ .env.local file found at {env_file.absolute()}")
+        
+        # Try to read the file
+        try:
+            with open(env_file, "r") as f:
+                content = f.read()
+                # Mask API keys for security
+                masked_content = re.sub(r'(API_KEY=")([^"]{5})([^"]+)(")', r'\1\2***\4', content)
+                masked_content = re.sub(r'(API_KEY=)([^"][^\n]{5})([^\n]+)', r'\1\2***', masked_content)
+                st.code(masked_content)
+        except Exception as e:
+            st.error(f"❌ Error reading .env.local file: {str(e)}")
+    else:
+        st.error(f"❌ .env.local file not found at {env_file.absolute()}")
+    
+    # Check if specific API keys are in environment
+    required_keys = ["GROQ_API_KEY", "HUGGINGFACE_API_KEY"]
+    for key in required_keys:
+        value = os.environ.get(key, "")
+        if value:
+            masked_value = value[:5] + "***" + value[-4:] if len(value) > 9 else "***"
+            st.success(f"✅ {key} found in environment: {masked_value}")
+        else:
+            st.error(f"❌ {key} not found in environment variables")
+    
+    # Show current directory and path information
+    st.subheader("📁 File System Info")
+    st.info(f"Current working directory: {os.getcwd()}")
+    
+    # Check AutoGen installation
+    st.subheader("🤖 AutoGen Status")
+    try:
+        import autogen
+        st.success(f"✅ AutoGen installed: version {autogen.__version__}")
+    except ImportError:
+        st.error("❌ AutoGen not installed")
+    except Exception as e:
+        st.error(f"❌ Error checking AutoGen: {str(e)}")
 
 def perform_sequence_analysis(sequence: str) -> Dict:
     """Perform comprehensive sequence analysis using FastAPI backend"""
@@ -51,11 +435,56 @@ def perform_sequence_analysis(sequence: str) -> Dict:
             json={"sequence": sequence}
         )
         
+        # Search literature (optional)
+        literature_data = None
+        try:
+            # Try to get top hits to use for literature search
+            if blast_response.ok:
+                blast_data = blast_response.json()
+                top_hits = blast_data.get("data", {}).get("hits", [])
+                if top_hits and len(top_hits) > 0:
+                    # Use top hit title for literature search
+                    search_term = top_hits[0].get("title", "").split("[")[0].strip()
+                    if search_term:
+                        literature_response = requests.post(
+                            "http://localhost:8000/literature",
+                            json={"query": search_term, "max_results": 5}
+                        )
+                        if literature_response.ok:
+                            literature_data = literature_response.json().get("data", {})
+        except Exception as e:
+            print(f"Literature search failed: {str(e)}")
+            # Continue without literature data
+        
         # Combine results
         results = {
             "blast": blast_response.json() if blast_response.ok else {"status": "error"},
             "mutation": mutation_response.json() if mutation_response.ok else {"status": "error"}
         }
+        
+        # Add risk assessment
+        try:
+            blast_data = results["blast"].get("data", {})
+            mutation_data = results["mutation"].get("data", {})
+            
+            # Create risk assessment object
+            risk_assessor = InfectionRiskAssessment()
+            
+            # Calculate risk
+            risk_results = risk_assessor.calculate_infection_risk(
+                blast_data, 
+                mutation_data,
+                literature_data
+            )
+            
+            # Add to results
+            results["risk_assessment"] = {
+                "status": "success",
+                "data": risk_results
+            }
+        except Exception as e:
+            print(f"Risk assessment failed: {str(e)}")
+            results["risk_assessment"] = {"status": "error", "message": str(e)}
         
         # Format the results into a readable message
         blast_hits = results["blast"].get("data", {}).get("hits", [])
@@ -91,8 +520,44 @@ def perform_sequence_analysis(sequence: str) -> Dict:
             "response": f"Analysis failed: {str(e)}"
         }
 
+def get_fallback_model(current_model: str) -> str:
+    """Get a fallback model when the current model is rate limited"""
+    # Define model tiers (from least to most likely to be rate limited)
+    model_tiers = {
+        "tier1": ["claude-3-haiku-20240307"],  # Usually less rate limited (different API)
+        "tier2": ["llama-3.1-8b-instant"],   # Small models, less likely to be rate limited
+        "tier3": ["kimi-k2", "deepseek-r1-distill-llama-70b"],  # Medium models
+        "tier4": ["meta-llama/llama-4-scout-17b-16e-instruct", "llama-3.3-70b-versatile"]  # Large models
+    }
+    
+    # Find current model tier
+    current_tier = None
+    for tier, models in model_tiers.items():
+        if current_model in models:
+            current_tier = tier
+            break
+    
+    # If model not found in tiers or is in tier1 already, use a tier1 model
+    if not current_tier or current_tier == "tier1":
+        return random.choice(model_tiers["tier1"])
+    
+    # Otherwise choose a model from a lower tier (less likely to be rate limited)
+    if current_tier == "tier4":
+        return random.choice(model_tiers["tier3"] + model_tiers["tier2"])
+    elif current_tier == "tier3":
+        return random.choice(model_tiers["tier2"] + model_tiers["tier1"])
+    else:  # tier2
+        return random.choice(model_tiers["tier1"])
+
 def call_chat_api(message: str, model: str = "llama-3.1-8b-instant", sequence: str = None) -> Dict:
-    """Make API calls to Node.js chat backend or sequence analysis based on message"""
+    """Make API calls to Node.js chat backend or sequence analysis based on message
+    
+    Enhanced with RAG and Agent systems if available
+    Includes error handling and rate limit management with fallback models
+    """
+    # Track API call start time to calculate latency
+    start_time = time.time()
+    
     try:
         # Check for analysis commands
         if sequence and message in ["ANALYZE_SEQUENCE", "RUN_BLAST", "FIND_LITERATURE"]:
@@ -116,17 +581,212 @@ def call_chat_api(message: str, model: str = "llama-3.1-8b-instant", sequence: s
                     "response": format_analysis_result(result, message)
                 }
         
-        # Default to chat API for regular queries
-        response = requests.post(
-            "http://localhost:3000/chat",
-            json={"message": message, "model": model}
-        )
-        if response.ok:
-            return {"status": "success", "response": response.json().get("response", "")}
-        else:
-            return {"status": "error", "message": f"Chat API error: {response.status_code}"}
+        # First try to use the agent system if available for normal queries
+        global agent_system, rag_system
+        
+        # Initialize systems if not already done
+        if not rag_system or not agent_system:
+            initialize_ai_systems()
+        
+        # Try to use RAG system to enhance the response with relevant context
+        rag_enhanced = None
+        if rag_system:
+            try:
+                st.info("Enhancing response with genomics knowledge base...")
+                rag_enhanced = use_rag_system_with_chat(message, sequence, rag_system)
+                enhanced_message = rag_enhanced.get("message", message)
+                context = rag_enhanced.get("context", "")
+                
+                # If we have context, include it in our log
+                if context:
+                    print(f"Using RAG context: {context[:100]}...")
+                    st.success("Found relevant genomics information to enhance the response.")
+                    
+                # If context was found, update the message with the context
+                message_with_context = message
+                if context:
+                    message_with_context = f"""User query: {message}
+                    
+Additional context for answering:
+{context}
+
+Please answer the user's query using this additional context when relevant."""
+                    message = message_with_context
+            except Exception as e:
+                print(f"RAG enhancement error (continuing without it): {str(e)}")
+                st.warning(f"Knowledge base enhancement encountered an issue: {str(e)}")
+        
+        # Try to use agent system if available
+        if agent_system:
+            try:
+                st.info("Consulting specialized AI assistants for your query...")
+                agent_result = use_agent_system_with_chat(message, sequence, agent_system)
+                if agent_result.get("status") == "success":
+                    st.success("Response generated by AI assistant team.")
+                    return {"status": "success", "response": agent_result.get("response", "")}
+                else:
+                    st.warning("AI assistants couldn't process this query, falling back to general response.")
+            except Exception as e:
+                print(f"Agent system error (falling back to chat API): {str(e)}")
+                st.warning("AI assistant team unavailable, using standard chat model instead.")
+        
+        # Fall back to Node.js chat API with rate limit handling
+        try:
+            # First check if we've had recent rate limit errors with this model
+            if hasattr(st.session_state, "rate_limit_errors") and model in st.session_state.rate_limit_errors:
+                last_error_time, count = st.session_state.rate_limit_errors[model]
+                time_since_error = time.time() - last_error_time
+                
+                # If we've had multiple rate limit errors recently, enforce a cooldown period
+                if count > 2 and time_since_error < 60:  # 60 second cooldown after 3 errors
+                    wait_time = 60 - time_since_error
+                    st.warning(f"⏳ Rate limit cooldown: Please wait {int(wait_time)} more seconds before trying again.")
+                    return {
+                        "status": "error", 
+                        "message": f"Rate limit cooldown: Please wait {int(wait_time)} more seconds before trying again.",
+                        "rate_limited": True
+                    }
+            
+            # Add API key and environment info to help diagnose issues
+            api_keys_info = {
+                "GROQ_API_KEY": "✅ Present" if os.environ.get("GROQ_API_KEY") else "❌ Missing",
+                "HUGGINGFACE_API_KEY": "✅ Present" if os.environ.get("HUGGINGFACE_API_KEY") else "❌ Missing"
+            }
+            
+            # Initialize rate limit tracking if not exists
+            if not hasattr(st.session_state, "rate_limited_models"):
+                st.session_state.rate_limited_models = {}
+            
+            # Check if current model was recently rate limited
+            current_time = datetime.now()
+            cooldown_minutes = 10  # Time to wait before trying a rate-limited model again
+            
+            if model in st.session_state.rate_limited_models:
+                limited_time = st.session_state.rate_limited_models[model]
+                time_since_limit = (current_time - limited_time).total_seconds() / 60
+                
+                # If model was recently rate limited, use a fallback model
+                if time_since_limit < cooldown_minutes:
+                    original_model = model
+                    model = get_fallback_model(model)
+                    st.warning(f"Model {original_model} was recently rate limited. Using {model} instead.")
+                    print(f"Switching from {original_model} to {model} due to recent rate limit")
+            
+            # Make the API call with timeout and retry logic
+            max_retries = 2
+            retry_delay = 5  # Start with 5 seconds
+            
+            for attempt in range(max_retries):
+                try:
+                    # Add timestamp to help with rate limit debugging
+                    timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    st.info(f"Requesting response from {model} (attempt {attempt+1}/{max_retries})...")
+                    
+                    response = requests.post(
+                        "http://localhost:3000/chat",
+                        json={
+                            "message": message, 
+                            "model": model,
+                            "sequence": sequence,  # Pass sequence data to the API
+                            "timestamp": timestamp  # For tracking requests
+                        },
+                        timeout=60  # Extended timeout (60 seconds)
+                    )
+                    
+                    # Calculate response latency
+                    latency = time.time() - start_time
+                    
+                    if response.ok:
+                        # Update rate limit tracking - this model worked!
+                        if model in st.session_state.rate_limited_models:
+                            del st.session_state.rate_limited_models[model]
+                        
+                        return {
+                            "status": "success", 
+                            "response": response.json().get("response", ""),
+                            "latency": f"{latency:.2f}s",
+                            "model_used": model
+                        }
+                    
+                    # If we got a rate limit error, mark this model as rate limited
+                    if response.status_code == 429:
+                        st.session_state.rate_limited_models[model] = current_time
+                        
+                        # Try a fallback model if not the last attempt
+                        if attempt < max_retries - 1:
+                            fallback_model = get_fallback_model(model)
+                            st.warning(f"Rate limit detected. Switching to {fallback_model}...")
+                            model = fallback_model
+                            time.sleep(2)  # Short delay before trying new model
+                            continue
+                    else:
+                        # For non-rate limit errors, just break
+                        break
+                        
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                    if attempt < max_retries - 1:
+                        st.info(f"Connection error. Retrying in {retry_delay} seconds... (Attempt {attempt+1}/{max_retries})")
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        return {
+                            "status": "error",
+                            "message": f"Connection error after {max_retries} attempts: {str(e)}"
+                        }
+            
+            # If we get here, all retries failed or non-429 error occurred
+            if response.status_code == 429:
+                # Handle rate limit error - store it for future reference
+                now = datetime.now()
+                st.session_state.rate_limited_models[model] = now
+                
+                # Suggest available models
+                available_models = ["llama-3.1-8b-instant", "kimi-k2", "claude-3-haiku-20240307"]
+                suggested_model = random.choice(available_models)
+                
+                return {
+                    "status": "error",
+                    "message": f"Error: Unable to fetch response due to rate limiting. Please try again in a few minutes or switch to another model like {suggested_model}.",
+                    "rate_limited": True
+                }
+                
+                # This code is unreachable since we already returned
+                # Keep for reference
+                """
+                # Update rate limit tracking
+                now = time.time()
+                if model in st.session_state.rate_limit_errors:
+                    _, count = st.session_state.rate_limit_errors[model]
+                    st.session_state.rate_limit_errors[model] = (now, count + 1)
+                else:
+                    st.session_state.rate_limit_errors[model] = (now, 1)
+                """
+            else:
+                # For other errors, return appropriate message
+                if response.status_code == 429:
+                    return {
+                        "status": "error",
+                        "message": f"Error: Unable to fetch response from Groq API. API Keys configured:\n- GROQ_API_KEY: {api_keys_info['GROQ_API_KEY']}\n- HUGGINGFACE_API_KEY: {api_keys_info['HUGGINGFACE_API_KEY']}\n\nGroq API Error: Request failed with status code 429 (rate limit exceeded).\n\nTry again in a few minutes or switch to a different model.",
+                        "rate_limited": True
+                    }
+                else:
+                    return {
+                        "status": "error", 
+                        "message": f"Chat API error: {response.status_code} - {response.text}\n\nAPI Keys configured:\n- GROQ_API_KEY: {api_keys_info['GROQ_API_KEY']}\n- HUGGINGFACE_API_KEY: {api_keys_info['HUGGINGFACE_API_KEY']}"
+                    }
+        except requests.exceptions.Timeout:
+            return {
+                "status": "error",
+                "message": "Request timed out. The server may be busy or experiencing issues."
+            }
+        except requests.exceptions.ConnectionError:
+            return {
+                "status": "error",
+                "message": "Connection error. Make sure the chat server is running on port 3000."
+            }
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": f"Error: {str(e)}"}
 
 def call_api(endpoint: str, data: Dict) -> Dict:
     """Make API calls to FastAPI backend for non-chat endpoints"""
@@ -392,12 +1052,13 @@ def display_chat_interface():
     st.header("🤖 Genomics Research Assistant")
     
     # Get available models
-    # Define available Groq models
+    # Define available models
     available_models = [
         "llama-3.1-8b-instant",  # Default and reliable model
         "llama-3.3-70b-versatile",
         "deepseek-r1-distill-llama-70b",
-        "meta-llama/llama-4-scout-17b-16e-instruct"
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "microsoft/BioGPT-Large"  # Microsoft's BioGPT model for biomedical text
     ]
     
     # Model selection
@@ -407,6 +1068,9 @@ def display_chat_interface():
         index=0,  # Default to llama-3.1-8b-instant
         help="Select the AI model for conversations"
     )
+    
+    # Model-specific information can be added here if needed
+    # (BioGPT model option has been removed)
     
     # Chat input with file context
     if st.session_state.current_sequence:
@@ -458,7 +1122,7 @@ def display_chat_interface():
                 
         with col2:
             if st.button("🔍 BLAST Search", key="chat_blast", help="Search NCBI database for similar sequences"):
-                with st.spinner("Running BLAST search against NCBI database..."):
+                with st.spinner("Running enhanced BLAST search with knowledge retrieval..."):
                     try:
                         # Get the sequence
                         seq = st.session_state.current_sequence
@@ -478,18 +1142,41 @@ def display_chat_interface():
                         # Determine sequence type
                         seq_type = local_detect_sequence_type(seq)
                         
-                        # Run BLAST search
-                        program = "blastn" if seq_type == "nucleotide" else "blastp"
-                        db = "nt" if seq_type == "nucleotide" else "nr"
+                        # Use our robust BLAST search implementation with fallbacks
+                        from robust_blast import RobustBLASTSearch
                         
-                        result_handle = NCBIWWW.qblast(program, db, seq, hitlist_size=5)
-                        blast_record = NCBIXML.read(result_handle)
+                        # Create robust BLAST searcher with multiple fallback mechanisms
+                        blast_searcher = RobustBLASTSearch(email=Entrez.email)
                         
-                        # Format results in a human-friendly way
+                        # Run the search with retry and fallback mechanisms
+                        with st.status("Running BLAST search with multiple fallback mechanisms..."):
+                            st.write("Searching sequence databases...")
+                            blast_result = blast_searcher.run_blast_search(
+                                sequence=seq, 
+                                max_retries=2,
+                                hitlist_size=5
+                            )
+                            st.write(f"Search completed via {blast_searcher.search_method_used} method")
+                        
+                        # Process and save results for RAG
+                        blast_results = blast_result["data"]["hits"]
+                        
+                        # Store results for future use
+                        st.session_state.blast_results = blast_results
+                        
+                        # Show whether we got actual BLAST results or fallback results
+                        if blast_searcher.search_method_used in ["direct_ncbi", "local_api"]:
+                            st.success("Successfully retrieved BLAST results")
+                        elif blast_searcher.search_method_used == "alternative_provider":
+                            st.info("Retrieved BLAST results from alternative provider")
+                        else:
+                            st.warning("Network issues prevented BLAST search. Using offline analysis.")
+                        
+                        # Use RAG to enhance results with contextual knowledge
                         blast_summary = "🧬 **BLAST Search Results:**\n\n"
-                        if blast_record.alignments:
-                            # Extract organism/virus name from first hit
-                            first_hit_title = blast_record.alignments[0].title
+                        if blast_results:
+                            # Extract organism name from first hit
+                            first_hit_title = blast_results[0]["title"]
                             organism_name = ""
                             
                             # Try to extract a clean organism name
@@ -508,8 +1195,8 @@ def display_chat_interface():
                                         organism_name = ' '.join(words[1:4])
                             
                             # Get the top match identity
-                            top_identity = (blast_record.alignments[0].hsps[0].identities / 
-                                           blast_record.alignments[0].hsps[0].align_length) * 100
+                            # Use the percent_identity that's already calculated in blast_results
+                            top_identity = blast_results[0]["percent_identity"]
                                 
                             # Human-friendly summary
                             if top_identity > 95:
@@ -538,10 +1225,10 @@ def display_chat_interface():
                                 blast_summary += f"I found a **{match_quality} match** ({top_identity:.1f}%) to sequences from **{organism_name or 'the organism'}**.\n\n"
                             
                             # Add secondary matches if they exist and are different
-                            if len(blast_record.alignments) > 1:
+                            if len(blast_results) > 1:
                                 other_organisms = set()
-                                for alignment in blast_record.alignments[1:3]:  # Just check next 2
-                                    match = re.search(r'\[(.*?)\]', alignment.title)
+                                for hit in blast_results[1:3]:  # Just check next 2
+                                    match = re.search(r'\[(.*?)\]', hit["title"])
                                     if match and match.group(1) not in other_organisms:
                                         other_organisms.add(match.group(1))
                                 
@@ -550,17 +1237,75 @@ def display_chat_interface():
                                     for org in other_organisms:
                                         blast_summary += f"• {org}\n"
                             
-                            # Add implications
+                            # Get additional context from RAG system
+                            gene_context = ""
+                            try:
+                                # First ensure RAG system is initialized
+                                if rag_system is None:
+                                    # Try to initialize it
+                                    initialize_ai_systems()
+                                
+                                # Check again if initialization succeeded
+                                if rag_system is not None:
+                                    if organism_name:
+                                        # Use RAG to get additional knowledge context
+                                        gene_context = rag_system.get_gene_context(organism_name)
+                                    else:
+                                        # Try using the title
+                                        gene_context = rag_system.get_gene_context(first_hit_title[:50])
+                                else:
+                                    gene_context = "Additional context not available - knowledge base not initialized."
+                            except Exception as e:
+                                gene_context = f"Additional context unavailable - {str(e)}"
+                            
+                            # Add RAG-enhanced implications
                             blast_summary += "\n**What this means:**\n"
-                            if "dengue" in first_hit_title.lower() or "dengue" in organism_name.lower():
+                            if "dengue" in first_hit_title.lower() or (organism_name and "dengue" in organism_name.lower()):
                                 blast_summary += "This sequence appears to be from Dengue virus, which causes dengue fever. "
                                 blast_summary += "Dengue is a mosquito-borne viral disease that has rapidly spread in all regions in recent years."
                             elif "coronavirus" in first_hit_title.lower() or "sars" in first_hit_title.lower():
                                 blast_summary += "This sequence appears to be from a coronavirus. Further analysis would be needed to determine the exact strain and potential implications."
                             else:
                                 blast_summary += "This sequence has significant similarity to known genomic sequences. Further analysis is recommended to understand its biological significance."
+                            
+                            # Add RAG knowledge enhancement
+                            if gene_context and len(gene_context) > 20 and not gene_context.startswith("Additional context"):
+                                blast_summary += "\n\n**Additional Knowledge Context:**\n"
+                                blast_summary += gene_context
+                            else:
+                                # Provide hardcoded context for common viruses if RAG system didn't return anything
+                                if "dengue" in first_hit_title.lower() or (organism_name and "dengue" in organism_name.lower()):
+                                    blast_summary += "\n\n**Additional Knowledge Context:**\n"
+                                    blast_summary += "Dengue virus is a single-stranded RNA virus that causes dengue fever. " 
+                                    blast_summary += "It's primarily transmitted by Aedes mosquitoes, especially Aedes aegypti. " 
+                                    blast_summary += "There are four serotypes (DENV-1, DENV-2, DENV-3, and DENV-4). "
+                                    blast_summary += "Infection with one serotype provides lifelong immunity against that specific serotype, but only partial protection against others. "
+                                    blast_summary += "Secondary infection with a different serotype increases the risk of developing severe dengue. "
+                                    blast_summary += "The virus genome encodes for three structural proteins (capsid, membrane, envelope) and seven non-structural proteins."
+                                # Only mention context issues if not related to initialization and we didn't provide hardcoded context
+                                elif gene_context and not gene_context.startswith("Additional context not available"):
+                                    blast_summary += "\n\n**Additional Knowledge Context:** Not available for this sequence."
+                        elif blast_searcher.search_method_used == "fallback_analysis":
+                            # This is our fallback analysis with no BLAST hits
+                            blast_summary += "⚠️ **Network Connectivity Issues**\n\n"
+                            blast_summary += "I couldn't connect to the BLAST databases. Here's a basic analysis of your sequence:\n\n"
+                            
+                            # Get sequence info from the fallback results
+                            if blast_results and "sequence_length" in blast_results[0]:
+                                seq_len = blast_results[0]["sequence_length"]
+                                gc_content = blast_results[0].get("gc_content")
+                                
+                                blast_summary += f"• Sequence length: {seq_len} base pairs\n"
+                                if gc_content:
+                                    blast_summary += f"• GC content: {gc_content}%\n"
+                                
+                                # Add suggestions
+                                blast_summary += "\nSuggestions:\n"
+                                blast_summary += "• Try again when your internet connection is more stable\n"
+                                blast_summary += "• You can still perform local analysis of this sequence\n"
+                                blast_summary += "• Consider using a smaller section of the sequence if it's very large\n"
                         else:
-                            blast_summary += "❌ I couldn't find any significant matches for this sequence in the NCBI database. This might indicate a novel sequence or potential sequencing errors."
+                            blast_summary += "❌ I couldn't find any significant matches for this sequence in the database. This might indicate a novel sequence or potential sequencing errors."
                         
                         # Add results to chat
                         st.session_state.messages.append({"role": "assistant", "content": blast_summary})
@@ -570,7 +1315,7 @@ def display_chat_interface():
                 
         with col3:
             if st.button("📚 Find Literature", key="chat_literature", help="Search for relevant research papers"):
-                with st.spinner("Searching scientific literature..."):
+                with st.spinner("Searching scientific literature with knowledge enhancement..."):
                     try:
                         # Get the sequence
                         seq = st.session_state.current_sequence
@@ -594,6 +1339,25 @@ def display_chat_interface():
                                             search_term = " ".join(words[1:3])
                                     break
                         
+                        # Try using RAG to determine best search term if no BLAST results
+                        if not search_term and "blast_results" in st.session_state and len(st.session_state.blast_results) > 0:
+                            # Use the RAG system to help determine the most relevant search term
+                            try:
+                                hit_title = st.session_state.blast_results[0].get("title", "")
+                                # Try to query for relevant gene context
+                                context = rag_system.query_knowledge(hit_title, "genes_info")
+                                if context and 'results' in context and context['results']:
+                                    # Extract potential search terms from context
+                                    for result in context['results']:
+                                        if "gene" in result.lower():
+                                            gene_match = re.search(r'gene\s+([A-Za-z0-9]+)', result, re.IGNORECASE)
+                                            if gene_match:
+                                                search_term = gene_match.group(1)
+                                                break
+                            except Exception as e:
+                                # Fall back to standard search terms
+                                pass
+                        
                         if not search_term:
                             # Try DNA analysis
                             if len(seq) > 500:
@@ -604,12 +1368,28 @@ def display_chat_interface():
                         # Search PubMed using our existing function
                         pmids = search_pubmed(search_term, max_results=5)
                         
-                        # Format results in a conversational style
+                        # Format results in a conversational style with RAG enhancement
                         lit_summary = f"📚 **Literature Search Results for '{search_term}'**\n\n"
+                        
+                        # Get additional knowledge context from RAG
+                        knowledge_context = ""
+                        try:
+                            # Try to get relevant literature context from our RAG system
+                            context_results = rag_system.query_knowledge(search_term, "literature", n_results=2)
+                            if context_results and 'results' in context_results and context_results['results']:
+                                knowledge_context = "\n".join(context_results['results'])
+                        except Exception as e:
+                            # Continue without RAG enhancement if there's an error
+                            pass
                         
                         if pmids:
                             # Fetch paper details
                             paper_details = fetch_pubmed_details(pmids)
+                            
+                            # Add RAG-enhanced introduction if available
+                            if knowledge_context:
+                                lit_summary += f"**Research Context:**\n{knowledge_context}\n\n"
+                            
                             lit_summary += "I found these relevant scientific publications:\n\n"
                             
                             for i, paper in enumerate(paper_details, 1):
@@ -622,11 +1402,27 @@ def display_chat_interface():
                                 
                                 lit_summary += f"**{i}. {title}**\n"
                                 lit_summary += f"   Authors: {authors}\n"
-                                lit_summary += f"   Published in: {journal} ({year})\n\n"
+                                lit_summary += f"   Published in: {journal} ({year})\n"
+                                
+                                # Try to get paper summary from RAG if possible
+                                try:
+                                    abstract = paper.get("abstract", "")
+                                    if abstract and len(abstract) > 100:
+                                        # Include a brief insight about this paper from RAG if possible
+                                        paper_context = rag_system.query_knowledge(abstract[:200], "literature")
+                                        if paper_context and 'results' in paper_context and paper_context['results']:
+                                            lit_summary += f"   **Key insight:** {paper_context['results'][0]}\n"
+                                except Exception:
+                                    pass
+                                
+                                lit_summary += "\n"
                                 
                             lit_summary += "These papers might provide scientific context for your sequence. Would you like me to summarize any of these papers in more detail?"
                         else:
-                            lit_summary += "I couldn't find any scientific publications directly related to your sequence. Try modifying your search terms or ask me to search for a specific topic."
+                            if knowledge_context:
+                                lit_summary += f"While I couldn't find specific scientific publications directly related to your sequence, here's some relevant information:\n\n{knowledge_context}\n\n"
+                            else:
+                                lit_summary += "I couldn't find any scientific publications directly related to your sequence. Try modifying your search terms or ask me to search for a specific topic."
                         
                         # Add to chat
                         st.session_state.messages.append({"role": "assistant", "content": lit_summary})
@@ -643,16 +1439,54 @@ def display_chat_interface():
         
         # Call Node.js chat API
         with st.spinner("🧠 AI is thinking..."):
-            response = call_chat_api(user_input, selected_model)
+            response = call_chat_api(user_input, selected_model, sequence)
         
         if response["status"] == "success":
-            # Add AI response to chat
+            # Add AI response to chat with model info if available
+            model_used = response.get("model_used", selected_model)
+            response_content = response["response"]
+            
+            # Add a small indicator of which model was used (only for non-default models)
+            if model_used != selected_model:
+                response_content += f"\n\n<small>*Response generated using {model_used} due to rate limits on {selected_model}*</small>"
+            
             st.session_state.messages.append({
                 "role": "assistant",
-                "content": response["response"]
+                "content": response_content
             })
         else:
-            st.error(f"Chat error: {response.get('message', 'Unknown error')}")
+            error_msg = response.get('message', 'Unknown error')
+            st.error(f"Chat error: {error_msg}")
+            
+            # Special handling for rate limit errors
+            if response.get('rate_limited', False):
+                st.warning("⚠️ Rate limit exceeded. Please try one of these options:")
+                
+                # Show model switching options
+                available_models = ["llama-3.1-8b-instant", "kimi-k2", "claude-3-haiku-20240307"]
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button(f"Try {available_models[0]}", key="try_model1"):
+                        st.session_state.selected_model = available_models[0]
+                        st.experimental_rerun()
+                        
+                with col2:
+                    if st.button(f"Try {available_models[1]}", key="try_model2"):
+                        st.session_state.selected_model = available_models[1]
+                        st.experimental_rerun()
+                        
+                with col3:
+                    if st.button("Wait 2 minutes", key="wait_option"):
+                        # Add a helpful message
+                        st.info("Waiting for rate limits to reset... You can ask a different question while waiting.")
+                        
+                # Show rate limit guide if it exists
+                rate_limit_guide = Path("RATE_LIMIT_GUIDE.md")
+                if rate_limit_guide.exists():
+                    with st.expander("📋 How to fix rate limit issues"):
+                        with open(rate_limit_guide, "r") as f:
+                            st.markdown(f.read())
     
     # Display conversation
     for message in st.session_state.messages:
@@ -796,6 +1630,35 @@ def display_analysis_panel():
                         "hit_index": 0
                     })
                     st.session_state.analysis_results["mutation"] = result
+                    
+                    # Run risk assessment automatically if BLAST data is available
+                    if result.get("status") == "success" and "blast" in st.session_state.analysis_results:
+                        with st.spinner("Running risk assessment..."):
+                            try:
+                                blast_data = st.session_state.analysis_results["blast"].get("data", {})
+                                mutation_data = result.get("data", {})
+                                
+                                # Create risk assessment object
+                                risk_assessor = InfectionRiskAssessment()
+                                
+                                # Calculate risk
+                                risk_results = risk_assessor.calculate_infection_risk(
+                                    blast_data, 
+                                    mutation_data,
+                                    None  # No literature data
+                                )
+                                
+                                # Add to results
+                                st.session_state.analysis_results["risk_assessment"] = {
+                                    "status": "success",
+                                    "data": risk_results
+                                }
+                            except Exception as e:
+                                st.warning(f"Risk assessment failed: {str(e)}")
+                                st.session_state.analysis_results["risk_assessment"] = {
+                                    "status": "error", 
+                                    "message": str(e)
+                                }
         
         with col3:
             st.markdown("**Genetic Variants Lookup**")
@@ -829,6 +1692,78 @@ def display_analysis_panel():
                     st.session_state.analysis_results["variants"] = result
         
         with col4:
+            # Risk Assessment button
+            st.markdown("**Risk Assessment**")
+            
+            if st.button("🛡️ Risk Assessment", use_container_width=True):
+                with st.spinner("Running comprehensive risk assessment..."):
+                    # Check if we have BLAST and mutation data
+                    has_blast = "blast" in st.session_state.analysis_results and \
+                                st.session_state.analysis_results["blast"].get("status") == "success"
+                    has_mutation = "mutation" in st.session_state.analysis_results and \
+                                  st.session_state.analysis_results["mutation"].get("status") == "success"
+                    
+                    # If missing data, run the necessary analysis
+                    if not has_blast:
+                        with st.spinner("Running BLAST analysis first..."):
+                            blast_result = call_api("blast", {
+                                "sequence": st.session_state.current_sequence,
+                                "num_hits": 5
+                            })
+                            st.session_state.analysis_results["blast"] = blast_result
+                            has_blast = blast_result.get("status") == "success"
+                    
+                    if not has_mutation:
+                        with st.spinner("Running mutation analysis first..."):
+                            mutation_result = call_api("mutation", {
+                                "sequence": st.session_state.current_sequence,
+                                "hit_index": 0
+                            })
+                            st.session_state.analysis_results["mutation"] = mutation_result
+                            has_mutation = mutation_result.get("status") == "success"
+                    
+                    # Run risk assessment if we have the needed data
+                    if has_blast and has_mutation:
+                        try:
+                            blast_data = st.session_state.analysis_results["blast"].get("data", {})
+                            mutation_data = st.session_state.analysis_results["mutation"].get("data", {})
+                            
+                            # Get literature data if available
+                            literature_data = None
+                            if "literature" in st.session_state.analysis_results and \
+                               st.session_state.analysis_results["literature"].get("status") == "success":
+                                literature_data = st.session_state.analysis_results["literature"].get("data", {})
+                            
+                            # Create risk assessment object
+                            risk_assessor = InfectionRiskAssessment()
+                            
+                            # Calculate risk
+                            risk_results = risk_assessor.calculate_infection_risk(
+                                blast_data, 
+                                mutation_data,
+                                literature_data
+                            )
+                            
+                            # Add to results
+                            st.session_state.analysis_results["risk_assessment"] = {
+                                "status": "success",
+                                "data": risk_results
+                            }
+                            
+                            st.success("Risk assessment completed! View results in the Analysis Results section.")
+                        except Exception as e:
+                            st.error(f"Risk assessment failed: {str(e)}")
+                            st.session_state.analysis_results["risk_assessment"] = {
+                                "status": "error", 
+                                "message": str(e)
+                            }
+                    else:
+                        st.error("Cannot run risk assessment - BLAST and mutation analysis required.")
+            
+            # Add a divider
+            st.markdown("---")
+            
+            # Literature Search (keep this too)
             if st.button("📚 Literature", use_container_width=True) and gene_input:
                 with st.spinner("Searching literature..."):
                     try:
@@ -857,10 +1792,38 @@ def display_results():
         
         # Create tabs for different results
         result_types = list(st.session_state.analysis_results.keys())
-        tabs = st.tabs([f"🔍 {rt.title()}" for rt in result_types])
+        
+        # Add risk assessment to the beginning if it exists
+        if "risk_assessment" in st.session_state.analysis_results:
+            # Move risk assessment to the front
+            result_types = ["risk_assessment"] + [rt for rt in result_types if rt != "risk_assessment"]
+        
+        # Custom tab labels with icons
+        tab_labels = {
+            "blast": "🧬 BLAST",
+            "mutation": "🔬 Mutations",
+            "variants": "📊 Variants",
+            "literature": "📚 Literature",
+            "risk_assessment": "🛡️ Risk Assessment"
+        }
+        
+        # Set default active tab if not already set
+        if "active_tab" not in st.session_state:
+            st.session_state["active_tab"] = result_types[0] if result_types else None
+        
+        # Create tab index mapping for programmatic access
+        tab_index_map = {rt: i for i, rt in enumerate(result_types)}
+        
+        # Create the tabs with selected tab based on session state
+        tab_index = tab_index_map.get(st.session_state["active_tab"], 0) if st.session_state["active_tab"] in tab_index_map else 0
+        tabs = st.tabs([tab_labels.get(rt, f"🔍 {rt.title()}") for rt in result_types])
         
         for i, (result_type, tab) in enumerate(zip(result_types, tabs)):
             with tab:
+                # Update active tab when this tab is selected
+                if i == tab_index:
+                    st.session_state["active_tab"] = result_type
+                
                 result_data = st.session_state.analysis_results[result_type]
                 
                 if result_data.get("status") == "success":
@@ -869,11 +1832,17 @@ def display_results():
                     if result_type == "blast":
                         display_blast_results(data)
                     elif result_type == "mutation":
+                        # Add risk assessment data to mutation results if available
+                        if "risk_assessment" in st.session_state.analysis_results and \
+                           st.session_state.analysis_results["risk_assessment"].get("status") == "success":
+                            data["risk_assessment_data"] = st.session_state.analysis_results["risk_assessment"]["data"]
                         display_mutation_results(data)
                     elif result_type == "variants":
                         display_variant_results(data)
                     elif result_type == "literature":
                         display_literature_results(data)
+                    elif result_type == "risk_assessment":
+                        display_risk_assessment_results(data)
                 else:
                     st.error(f"Analysis failed: {result_data.get('message', 'Unknown error')}")
 
@@ -920,31 +1889,22 @@ def display_blast_results(data: Dict):
         st.info("Try with a different sequence or check if the sequence is valid")
 
 def display_mutation_results(data: Dict):
-    """Display mutation analysis results with risk assessment and rich visualizations"""
+    """Display mutation analysis results with rich visualizations"""
     if "mutations" in data:
         mutations = data.get("mutations", [])
         num_mutations = len(mutations)
         
-        # Risk Assessment Section
-        st.subheader("🎯 Mutation Risk Assessment")
-        col1, col2, col3 = st.columns(3)
+        # Basic mutation statistics
+        st.subheader("🧬 Mutation Statistics")
+        col1, col2 = st.columns(2)
         
-        # Calculate risk metrics
-        mutation_risk = min((num_mutations / 10) * 100, 100)  # Scale based on mutation count
-        critical_positions = [10, 20, 30, 40, 50]  # Same as in risk_assessment.py
-        critical_mutations = [m for m in mutations if m.get("position", 0) in critical_positions]
-        critical_risk = min((len(critical_mutations) / len(critical_positions)) * 100, 100)
-        
-        # Display risk metrics
         with col1:
             st.metric("Total Mutations", num_mutations)
         with col2:
-            st.metric("Mutation Risk Score", f"{mutation_risk:.1f}%")
-        with col3:
-            # Calculate overall risk level
-            risk_level = "High" if mutation_risk > 70 else "Moderate" if mutation_risk > 40 else "Low"
-            risk_icon = "🚨" if risk_level == "High" else "⚠️" if risk_level == "Moderate" else "✅"
-            st.metric(f"{risk_icon} Risk Level", risk_level, f"{max(mutation_risk, critical_risk):.0f}%")
+            if "alignment" in data:
+                align_data = data["alignment"]
+                identity_val = align_data.get('percent_identity', 0)
+                st.metric("Sequence Identity", f"{identity_val:.1f}%")
         
         # Main mutation analysis dashboard
         st.subheader("🧬 Mutation Analysis Dashboard")
@@ -1271,6 +2231,17 @@ def display_variant_results(data: Dict):
     else:
         st.info("No variants found or error in lookup")
 
+def display_risk_assessment_results(data: Dict):
+    """Display comprehensive risk assessment results without showing BLAST or mutation analysis"""
+    if data:
+        # Use the display_risk_assessment function from our module, passing only the risk results
+        display_risk_assessment(None, None, None, data)
+        
+        # Add source information
+        st.info("ℹ️ Risk assessment is calculated using sequence similarity, taxonomic information, mutation analysis, and literature data when available.")
+    else:
+        st.warning("No risk assessment data available")
+
 def display_literature_results(data: Dict):
     """Display literature search results with clickable PMID links"""
     if "papers" in data and data["papers"]:
@@ -1568,13 +2539,87 @@ def main():
     """Main application"""
     init_session_state()
     
+    # Initialize AI systems on first load
+    if not st.session_state.get("rag_initialized", False):
+        initialize_ai_systems()
+        st.session_state.rag_initialized = True
+    
     st.title("🧬 Genomics Research Assistant")
-    st.markdown("*AI-powered bioinformatics analysis and research support*")
+    st.markdown("*AI-powered bioinformatics analysis and research support with RAG and Multi-Agent systems*")
     
     # Sidebar
     with st.sidebar:
         st.header("Navigation")
         
+        # Debug tools in expander
+        with st.expander("🛠️ Debug Tools"):
+            if st.button("Check Environment Variables"):
+                st.session_state.show_debug = True
+            if st.button("Advanced Troubleshooting"):
+                st.session_state.show_debug = True
+                st.session_state.show_enhanced_debug = True
+            
+            # Show help link
+            debug_guide_path = Path("DEBUG_GUIDE.md")
+            if debug_guide_path.exists():
+                if st.button("📋 View Debug Guide"):
+                    with open(debug_guide_path, "r") as f:
+                        st.markdown(f.read())
+    
+    # Display debug information if requested
+    display_debug_info()
+    if st.session_state.get("show_enhanced_debug", False):
+        display_enhanced_debug_tools()
+        
+    # Show RAG system status
+    if rag_system is None:
+        st.sidebar.error("⚠️ RAG system unavailable. Some features like gene information retrieval will not work correctly.")
+        
+        # Show help button for fixing RAG
+        with st.sidebar.expander("🔧 Fix RAG System"):
+            st.markdown("""
+            ### Steps to fix the RAG system:
+            
+            1. **Close any running Streamlit applications**
+            2. Open a command prompt and run:
+               ```
+               cd d:\\Fastalysis\\app
+               python create_fresh_rag_db.py
+               ```
+            3. Wait for the script to complete successfully
+            4. Update the `db_path` in `enhanced_streamlit_app.py` to the new path
+            5. Restart the application
+            """)
+            if st.button("Create Fresh RAG DB (may take a minute)"):
+                try:
+                    import subprocess
+                    import sys
+                    
+                    with st.spinner("Creating fresh RAG database... (this may take a minute)"):
+                        # Run the script to create a fresh RAG database
+                        process = subprocess.Popen(
+                            [sys.executable, "create_fresh_rag_db.py"], 
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True
+                        )
+                        stdout, stderr = process.communicate(timeout=180)  # 3 minutes timeout
+                        
+                        if process.returncode == 0:
+                            st.success("Fresh RAG database created successfully! Please restart the application.")
+                            st.code(stdout)
+                        else:
+                            st.error(f"Failed to create fresh RAG database: {stderr}")
+                except Exception as e:
+                    st.error(f"Failed to create fresh RAG database: {str(e)}")
+    
+    elif not hasattr(rag_system, 'genes_collection'):
+        # Minimal RAG system or incompatible RAG implementation
+        st.sidebar.warning("⚠️ RAG system is in minimal mode. Gene and mutation information will be limited.")
+        
+    elif hasattr(rag_system, 'genes_collection') and rag_system.genes_collection.count() == 0:
+        st.sidebar.warning("⚠️ Knowledge base is empty. Use Debug Tools to reload if needed.")
+                
         # Quick file upload in sidebar
         st.subheader("📁 Quick Upload")
         sidebar_upload = st.file_uploader(
